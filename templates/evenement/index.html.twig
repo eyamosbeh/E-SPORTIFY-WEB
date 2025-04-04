@@ -1,0 +1,106 @@
+{# templates/back_office/evenement/index.html.twig #}
+{% extends 'baseBackOffice.html.twig' %}
+
+{% block title %}Gestion des Événements{% endblock %}
+
+{% block page_title %}Gestion des Événements{% endblock %}
+{% block page_subtitle %}Liste des événements{% endblock %}
+
+{% block page_actions %}
+  <a href="{{ path('app_evenement_new') }}" class="btn btn-primary mb_10">
+    <i class="ti-plus"></i> Créer un nouvel événement
+  </a>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="white_card card_height_100 mb_30">
+        <div class="white_card_header">
+          <div class="box_header m-0">
+            <div class="main-title">
+              <h3 class="m-0">Liste des événements</h3>
+            </div>
+            <div class="header_more_tool">
+              <div class="dropdown">
+                            <span class="dropdown-toggle" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="ti-more-alt"></i>
+                            </span>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#"><i class="ti-printer"></i> Imprimer</a>
+                  <a class="dropdown-item" href="#"><i class="fa fa-download"></i> Exporter</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="white_card_body">
+          <div class="QA_section">
+            <div class="QA_table mb_0">
+              <!-- table-responsive -->
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                  <tr>
+                    <th scope="col">#ID</th>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Localisation</th>
+                    <th scope="col">Capacité</th>
+                    <th scope="col" class="text-end">Actions</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% for evenement in evenements %}
+                    <tr>
+                      <th scope="row">{{ evenement.id }}</th>
+                      <td>{{ evenement.nom }}</td>
+                      <td>{{ evenement.date ? evenement.date|date('d/m/Y') : '' }}</td>
+                      <td>{{ evenement.localisation }}</td>
+                      <td>{{ evenement.capacite }}</td>
+                      <td class="text-end">
+                        <div class="action_btns d-flex justify-content-end">
+                          <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}"
+                             class="action_btn mr_10"
+                             title="Voir">
+                            <i class="ti-eye"></i>
+                          </a>
+                          <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}"
+                             class="action_btn mr_10"
+                             title="Modifier">
+                            <i class="ti-pencil"></i>
+                          </a>
+                          {{ include('evenement/_delete_form.html.twig') }}
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="text-center">Aucun événement trouvé</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    $(document).ready(function() {
+      // Confirmation avant suppression
+      $('.delete-form').on('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+          this.submit();
+        }
+      });
+    });
+  </script>
+{% endblock %}
