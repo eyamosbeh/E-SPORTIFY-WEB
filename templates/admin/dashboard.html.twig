@@ -1,0 +1,300 @@
+{% extends 'basee.html.twig' %}
+
+{% block title %}Tableau de bord - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ asset('dashboard/style.css') }}">
+    <style>
+        body {
+            background-color: white !important;
+        }
+        #content {
+            background-color: white !important;
+        }
+
+        /* Styles pour toutes les cartes */
+        .card {
+            border: none !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            margin-bottom: 1rem !important;
+        }
+
+        /* Style pour la carte des réclamations en attente */
+        #pending-claims .card-header {
+            background: linear-gradient(to right, #ffc107, #e5ac06) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        /* Style pour la carte des réclamations récentes */
+        .card .card-header.bg-info {
+            background: linear-gradient(to right, #0dcaf0, #0aa2c0) !important;
+            border: none !important;
+        }
+
+        /* Styles pour les cartes statistiques */
+        .card[style*="gradient"] {
+            border: none !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        }
+        .card[style*="gradient"] .card-body {
+            padding: 1.5rem !important;
+        }
+        .card[style*="gradient"] .text-white {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        }
+        .card[style*="gradient"] .card-footer {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-top: none !important;
+        }
+
+        /* Styles pour le contenu blanc */
+        .card-body {
+            background-color: white !important;
+        }
+        .list-group-item {
+            background-color: white !important;
+        }
+        .table {
+            background-color: white !important;
+        }
+        main {
+            background-color: white !important;
+        }
+
+        /* Style pour les badges et boutons */
+        .badge.bg-light {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #333 !important;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #6c757d !important;
+            color: white !important;
+        }
+        .btn-outline-success:hover {
+            background-color: #198754 !important;
+            color: white !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<!-- SIDEBAR -->
+<section id="sidebar">
+    <a href="#" class="brand">
+        <img src="{{ asset('navbar/img/E-SPORTIFY.png') }}" alt="E-SPORTIFY" style="width: 180px; height: auto; margin-left: 10px;">
+    </a>
+    <ul class="side-menu top">
+        <li class="active">
+            <a href="{{ path('app_dashboard_admin') }}">
+                <i class='bx bxs-dashboard' ></i>
+                <span class="text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-shopping-bag-alt' ></i>
+                <span class="text">My Store</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Analytics</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ path('app_admin_dashboard') }}">
+                <i class='bx bxs-message-dots' ></i>
+                <span class="text">Message</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-group' ></i>
+                <span class="text">Team</span>
+            </a>
+        </li>
+    </ul>
+    <ul class="side-menu">
+        <li>
+            <a href="#">
+                <i class='bx bxs-cog' ></i>
+                <span class="text">Settings</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ path('app_logout') }}" class="logout">
+                <i class='bx bxs-log-out-circle' ></i>
+                <span class="text">Logout</span>
+            </a>
+        </li>
+    </ul>
+</section>
+<!-- SIDEBAR -->
+
+<!-- CONTENT -->
+<section id="content">
+    
+    <!-- MAIN -->
+    <main>
+        <div class="container py-4">
+            
+            
+            <!-- Statistiques récapitulatives -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card" style="background: linear-gradient(to right, #0d6efd, #0b5ed7) !important;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title text-blue">Total</h6>
+                                    <h2 class="card-text text-blue">{{ stats.total }}</h2>
+                                </div>
+                                <i class="fas fa-clipboard-list fa-3x text-white opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card" style="background: linear-gradient(to right, #ffc107, #e5ac06) !important;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title text-blue">En attente</h6>
+                                    <h2 class="card-text text-blue">{{ stats.enAttente }}</h2>
+                                </div>
+                                <i class="fas fa-clock fa-3x text-white opacity-50"></i>
+                            </div>
+                        </div>
+                        <div class="card-footer" style="background: rgba(255, 255, 255, 0.1) !important; border-top: none;">
+                            <a href="#pending-claims" class="text-white text-decoration-none">
+                                <small><i class="fas fa-arrow-right me-1"></i> Voir les réclamations en attente</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card" style="background: linear-gradient(to right, #198754, #157347) !important;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title text-blue">Résolues</h6>
+                                    <h2 class="card-text text-blue">{{ stats.resolues }}</h2>
+                                </div>
+                                <i class="fas fa-check-circle fa-3x text-white opacity-50"></i>
+                            </div>
+                        </div>
+                        <div class="card-footer" style="background: rgba(255, 255, 255, 0.1) !important; border-top: none;">
+                            <a href="{{ path('app_admin_reclamations_resolues') }}" class="text-white text-decoration-none">
+                                <small><i class="fas fa-arrow-right me-1"></i> Voir les réclamations résolues</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reste du contenu -->
+            <div class="row">
+                <!-- Réclamations en attente -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm mb-4" id="pending-claims">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-circle me-1"></i> Réclamations en attente de réponse
+                                <span class="badge bg-light text-dark">{{ pendingReclamations|length }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if pendingReclamations|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Description</th>
+                                                <th>Date</th>
+                                                <th>Catégorie</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for reclamation in pendingReclamations %}
+                                                <tr>
+                                                    <td>#{{ reclamation.id }}</td>
+                                                    <td>{{ reclamation.description|length > 50 ? reclamation.description|slice(0, 50) ~ '...' : reclamation.description }}</td>
+                                                    <td>{{ reclamation.date_creation|date('d/m/Y H:i') }}</td>
+                                                    <td>{{ reclamation.categorie ? reclamation.categorie : 'Non catégorisée' }}</td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            
+                                                            <a href="{{ path('app_admin_reponse', {'id': reclamation.id}) }}" class="btn btn-outline-success">
+                                                                <i class="fas fa-reply"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-success m-3">
+                                    <i class="fas fa-check-circle me-1"></i> Aucune réclamation en attente. Bon travail !
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Réclamations récentes -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-clock me-1"></i> Dernières réclamations
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                {% for reclamation in latestReclamations %}
+                                    <a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Réclamation #{{ reclamation.id }}</h6>
+                                            <small class="text-muted">{{ reclamation.date_creation|date('d/m/Y') }}</small>
+                                        </div>
+                                        <p class="mb-1 text-truncate">{{ reclamation.description }}</p>
+                                        <small class="d-flex justify-content-between">
+                                            <span class="badge {{ reclamation.statut|lower|replace({' ': '-'}) }}">{{ reclamation.statut }}</span>
+                                            {% if reclamation.categorie %}
+                                                <span class="badge bg-info">{{ reclamation.categorie }}</span>
+                                            {% endif %}
+                                        </small>
+                                    </a>
+                                {% else %}
+                                    <div class="list-group-item">
+                                        <p class="mb-0">Aucune réclamation récente</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- MAIN -->
+</section>
+<!-- CONTENT -->
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('dashboard/script.js') }}"></script>
+{% endblock %} 

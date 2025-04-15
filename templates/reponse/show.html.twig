@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail de la Réponse{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_reponse_index') }}">Réponses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Réponse #{{ reponse.id }}</li>
+        </ol>
+    </nav>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">Détail de la Réponse</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold">ID</h6>
+                        <p>{{ reponse.id }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Contenu</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ reponse.contenu|nl2br }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Date de création</h6>
+                        <p>{{ reponse.date_creation ? reponse.date_creation|date('d/m/Y H:i') : 'N/A' }}</p>
+                    </div>
+                    
+                    {% if reponse.reclamation %}
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Réclamation associée</h6>
+                        <a href="{{ path('app_reclamation_show', {'id': reponse.reclamation.id}) }}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-file-alt me-1"></i> Voir la réclamation #{{ reponse.reclamation.id }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h3 class="h5 mb-0">Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('app_reponse_edit', {'id': reponse.id}) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-1"></i> Modifier
+                        </a>
+                        
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash-alt me-1"></i> Supprimer
+                        </button>
+                        
+                        <a href="{{ path('app_reponse_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmation de suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette réponse ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('app_reponse_delete', {'id': reponse.id}) }}" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
+                    <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
