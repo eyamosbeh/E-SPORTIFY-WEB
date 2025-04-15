@@ -1,0 +1,232 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - Répondre à la réclamation{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_reclamation_index') }}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}">Réclamation #{{ reclamation.id }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Répondre</li>
+        </ol>
+    </nav>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <!-- Colonne de gauche: Détails de la réclamation -->
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h4 mb-0">Détails de la réclamation</h2>
+                        <span class="badge {{ reclamation.statut|lower|replace({' ': '-'}) }} bg-light text-dark">{{ reclamation.statut }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Informations générales</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>ID</strong>
+                            <span>{{ reclamation.id }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>Date de création</strong>
+                            <span>{{ reclamation.date_creation|date('d/m/Y H:i') }}</span>
+                        </li>
+                        {% if reclamation.categorie %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>Catégorie</strong>
+                            <span class="badge bg-info">{{ reclamation.categorie }}</span>
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>Archivée</strong>
+                            <span>{{ reclamation.archived ? 'Oui' : 'Non' }}</span>
+                        </li>
+                    </ul>
+                    
+                    <h5 class="card-title mb-3">Description</h5>
+                    <div class="p-3 bg-light rounded mb-4">
+                        {{ reclamation.description|nl2br }}
+                    </div>
+                    
+                    {% if reclamation.image_path or reclamation.pdf_path %}
+                        <h5 class="card-title mb-3">Pièces jointes</h5>
+                        <div class="list-group mb-3">
+                            {% if reclamation.image_path %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-2">Image</h6>
+                                    <div class="text-center mb-2">
+                                        <img src="{{ asset('uploads/images/' ~ reclamation.image_path) }}" 
+                                             class="img-fluid thumbnail" style="max-height: 150px;" alt="Image jointe">
+                                    </div>
+                                    <div class="d-grid">
+                                        <a href="{{ asset('uploads/images/' ~ reclamation.image_path) }}" 
+                                           class="btn btn-sm btn-outline-info" target="_blank">
+                                            <i class="fas fa-search-plus me-1"></i> Voir en taille réelle
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if reclamation.pdf_path %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-2">Document PDF</h6>
+                                    <div class="d-grid">
+                                        <a href="{{ asset('uploads/pdf/' ~ reclamation.pdf_path) }}" 
+                                           class="btn btn-sm btn-outline-danger" target="_blank">
+                                            <i class="fas fa-file-pdf me-1"></i> Consulter le PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid mt-4">
+                        <a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour à la réclamation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Colonne de droite: Formulaire de réponse -->
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h4 mb-0">
+                        <i class="fas fa-reply me-2"></i>Formulaire de réponse à la réclamation
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <!-- Historique des réponses -->
+                    {% if reclamation.reponses|length > 0 %}
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-history me-1"></i> Historique des réponses 
+                                <span class="badge bg-secondary">{{ reclamation.reponses|length }}</span>
+                            </h5>
+                            <div class="list-group mb-4">
+                                {% for reponse in reclamation.reponses %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between mb-2">
+                                            <h6 class="mb-0 text-primary">Réponse #{{ reponse.id }}</h6>
+                                            <small class="text-muted">{{ reponse.date_creation|date('d/m/Y H:i') }}</small>
+                                        </div>
+                                        <p class="mb-2">{{ reponse.contenu|nl2br }}</p>
+                                        <div class="d-flex justify-content-end">
+                                            <a href="{{ path('app_reponse_edit', {'id': reponse.id}) }}" class="btn btn-sm btn-outline-warning me-1">
+                                                <i class="fas fa-edit me-1"></i> Modifier
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" data-bs-target="#deleteReponseModal{{ reponse.id }}">
+                                                <i class="fas fa-trash-alt me-1"></i> Supprimer
+                                            </button>
+                                            
+                                            <!-- Modal suppression réponse -->
+                                            <div class="modal fade" id="deleteReponseModal{{ reponse.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-danger text-white">
+                                                            <h5 class="modal-title">Supprimer la réponse</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Êtes-vous sûr de vouloir supprimer cette réponse ?</p>
+                                                            <div class="alert alert-warning">
+                                                                <i class="fas fa-exclamation-triangle me-1"></i> Cette action est irréversible.
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                            <form method="post" action="{{ path('app_reponse_delete', {'id': reponse.id}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
+                                                                <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Formulaire de réponse -->
+                    <form method="post" action="{{ path('app_admin_reponse_submit', {'id': reclamation.id}) }}" class="admin-reponse-form">
+                        <div class="form-group mb-4">
+                            <label for="admin-reponse-content" class="form-label fw-bold">Votre réponse</label>
+                            <textarea name="reponse" id="admin-reponse-content" rows="7" class="form-control" 
+                                      placeholder="Saisissez votre réponse à la réclamation ici..." required></textarea>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i> La réponse sera enregistrée et la réclamation sera automatiquement marquée comme résolue.
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="notifyClient" name="notify_client" checked>
+                                <label class="form-check-label" for="notifyClient">Notifier le client par email</label>
+                            </div>
+                            <div class="form-text">
+                                Si cette option est cochée, le client recevra un email l'informant qu'une réponse a été publiée.
+                            </div>
+                        </div>
+                            
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_reclamation_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-1"></i> Envoyer la réponse
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Styles spécifiques pour la page admin de réponse */
+        .admin-reponse-form textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+        
+        .admin-reponse-form textarea:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25);
+        }
+        
+        .card-header.bg-success h2 {
+            margin-bottom: 0;
+        }
+        
+        .list-group-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+{% endblock %} 

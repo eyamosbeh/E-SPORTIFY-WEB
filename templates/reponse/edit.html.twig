@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la Réponse{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_reponse_index') }}">Réponses</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_reponse_show', {'id': reponse.id}) }}">Réponse #{{ reponse.id }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">Modifier la réponse #{{ reponse.id }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if reponse.reclamation %}
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-info-circle fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="alert-heading">Réclamation associée</h5>
+                                    <p class="mb-0">Cette réponse est associée à la réclamation #{{ reponse.reclamation.id }}</p>
+                                    <a href="{{ path('app_reclamation_show', {'id': reponse.reclamation.id}) }}" class="alert-link">
+                                        <small>Voir la réclamation</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.contenu, 'Contenu de la réponse', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 6}}) }}
+                            {{ form_errors(form.contenu) }}
+                            <small class="form-text text-muted">Saisissez une réponse claire et détaillée.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.reclamation, 'Réclamation concernée', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.reclamation, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.reclamation) }}
+                            <small class="form-text text-muted">Sélectionnez la réclamation à laquelle cette réponse est associée.</small>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ path('app_reponse_show', {'id': reponse.id}) }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

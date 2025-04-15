@@ -1,0 +1,225 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Réclamations{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .card {
+        background-color: rgba(26, 13, 33, 0.9) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .table {
+        color: #fff;
+    }
+    body {
+        background-color: #1A0D21;
+    }
+    .btn-outline-primary {
+        color: #fff;
+        border-color: var(--text-purple);
+    }
+    .btn-outline-primary:hover {
+        background-color: var(--text-purple);
+        border-color: var(--text-purple);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="background-color: #1A0D21;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 title text-white">Liste des <span style="color: var(--text-purple);">Réclamations</span></h1>
+        </div>
+        <a href="{{ path('app_reclamation_new') }}" class="btn">
+            <i class="fas fa-plus-circle me-2"></i> Nouvelle Réclamation
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="h4 mb-2 text-white">{{ reclamations|length }}</h3>
+                    <p class="mb-0 text-white">Réclamations actives</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="h4 mb-2 text-white">{{ reclamations|filter(r => r.statut == 'En attente')|length }}</h3>
+                    <p class="mb-0 text-white">En attente</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="h4 mb-2 text-white">{{ reclamations|filter(r => r.statut == 'Résolue')|length }}</h3>
+                    <p class="mb-0 text-white">Résolues</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0 text-white">
+                <i class="fas fa-clipboard-list me-2"></i> 
+                {% if app.request.query.get('archived') %}
+                    Réclamations archivées
+                {% else %}
+                    Réclamations actives
+                {% endif %}
+            </h2>
+            <div>
+                {% if app.request.query.get('archived') %}
+                    <a href="{{ path('app_reclamation_index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-clipboard-list me-1"></i> Voir les actives
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_reclamation_index', {'archived': 'true'}) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-archive me-1"></i> Voir les archives
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            {% if reclamations|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Description</th>
+                                <th>Statut</th>
+                                <th>Date de création</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reclamation in reclamations %}
+                                <tr>
+                                    <td>{{ reclamation.id }}</td>
+                                    <td>{{ reclamation.description|slice(0, 50) ~ (reclamation.description|length > 50 ? '...' : '') }}</td>
+                                    <td>
+                                        <span class="status-badge {{ reclamation.statut|lower|replace({' ': '-'}) }}">
+                                            {{ reclamation.statut }}
+                                        </span>
+                                    </td>
+                                    <td>{{ reclamation.date_creation ? reclamation.date_creation|date('d/m/Y H:i') : '' }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ path('app_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if not reclamation.archived %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#archiveModal{{ reclamation.id }}">
+                                                    <i class="fas fa-archive"></i>
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#unarchiveModal{{ reclamation.id }}">
+                                                    <i class="fas fa-box-open"></i>
+                                                </button>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ reclamation.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal Archive -->
+                                        <div class="modal fade" id="archiveModal{{ reclamation.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirmation d'archivage</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Êtes-vous sûr de vouloir archiver cette réclamation ?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <form method="post" action="{{ path('app_reclamation_archive', {'id': reclamation.id}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ reclamation.id) }}">
+                                                            <button type="submit" class="btn btn-primary">Archiver</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Modal Unarchive -->
+                                        <div class="modal fade" id="unarchiveModal{{ reclamation.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirmation de restauration</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Êtes-vous sûr de vouloir restaurer cette réclamation ?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <form method="post" action="{{ path('app_reclamation_unarchive', {'id': reclamation.id}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('unarchive' ~ reclamation.id) }}">
+                                                            <button type="submit" class="btn btn-success">Restaurer</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Modal Delete -->
+                                        <div class="modal fade" id="deleteModal{{ reclamation.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header modal-danger">
+                                                        <h5 class="modal-title">Confirmation de suppression</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-deletion-warning">
+                                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                                            <strong>Attention :</strong> Cette action est irréversible.
+                                                        </div>
+                                                        <p>Êtes-vous sûr de vouloir supprimer définitivement cette réclamation ?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <form method="post" action="{{ path('app_reclamation_delete', {'id': reclamation.id}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                                                            <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard fa-3x mb-3" style="color: var(--text-champagne-pink);"></i>
+                    <h3 class="h4">Aucune réclamation trouvée</h3>
+                    <p>Commencez par créer votre première réclamation</p>
+                    <a href="{{ path('app_reclamation_new') }}" class="btn mt-3">
+                        <i class="fas fa-plus-circle me-2"></i> Nouvelle Réclamation
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

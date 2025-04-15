@@ -1,0 +1,26 @@
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+    <div class="card-body">
+        <div class="form-group mb-3">
+            {{ form_label(form.contenu, 'Contenu de la réponse', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.contenu) }}
+            </div>
+            <small class="form-text text-muted">Entrez une réponse détaillée à la réclamation.</small>
+        </div>
+
+        {% if form.reclamation is defined %}
+        <div class="form-group mb-3">
+            {{ form_label(form.reclamation, 'Réclamation associée', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.reclamation, {'attr': {'class': 'form-control'}}) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.reclamation) }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-footer text-end">
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_reponse_index') }}" class="btn btn-secondary">Annuler</a>
+    </div>
+{{ form_end(form) }} 

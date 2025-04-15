@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réclamations résolues{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Réclamations résolues</h1>
+
+        {% if reclamations is empty %}
+            <div class="alert alert-info">
+                Aucune réclamation résolue pour le moment.
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Catégorie</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reclamation in reclamations %}
+                            <tr>
+                                <td>#{{ reclamation.id }}</td>
+                                <td>{{ reclamation.description|slice(0, 100) }}...</td>
+                                <td>{{ reclamation.categorie }}</td>
+                                <td>{{ reclamation.dateCreation|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    <form method="post" action="{{ path('app_reclamation_archive', {'id': reclamation.id}) }}" style="display: inline-block">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ reclamation.id) }}">
+                                        <button class="btn btn-sm btn-secondary" onclick="return confirm('Êtes-vous sûr de vouloir archiver cette réclamation ?')">
+                                            <i class="fas fa-archive"></i> Archiver
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+        </a>
+    </div>
+{% endblock %} 
