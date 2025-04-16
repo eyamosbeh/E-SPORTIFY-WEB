@@ -44,20 +44,20 @@
                             <td>{{ reservation.nombrepersonnes }}</td>
                             <td class="actions">
                                 <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-view">
-                                    <i class="fas fa-eye"></i>
+                                    <i class="fas fa-eye"></i> Voir
                                 </a>
                                 {% if not reservation.archived %}
                                     <form method="post" action="{{ path('app_reservation_archive', {'id_reservation': reservation.id_reservation}) }}" class="form-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ reservation.id_reservation) }}">
                                         <button type="submit" class="btn btn-edit">
-                                            <i class="fas fa-archive"></i>
+                                            <i class="fas fa-archive"></i> Archiver
                                         </button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{{ path('app_reservation_restore', {'id_reservation': reservation.id_reservation}) }}" class="form-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('restore' ~ reservation.id_reservation) }}">
                                         <button type="submit" class="btn btn-edit">
-                                            <i class="fas fa-undo"></i>
+                                            <i class="fas fa-undo"></i> Restaurer
                                         </button>
                                     </form>
                                 {% endif %}
@@ -182,15 +182,41 @@
         .btn-view {
             background-color: #2196f3;
             color: white;
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-edit {
-            background-color: #6c5ce7;
+            background-color: #dc3545;
             color: white;
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-view:hover {
+            background-color: #0b7dda;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-edit:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
         }
 
         .form-inline {

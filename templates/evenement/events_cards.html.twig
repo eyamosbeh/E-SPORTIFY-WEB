@@ -3,14 +3,8 @@
 {% block title %}Événements à venir{% endblock %}
 
 {% block body %}
-    <div class="header">
-        <div class="header-content">
-            <h1 class="page-title">Événements à venir</h1>
-            <a href="{{ path('app_sign_in') }}" class="btn btn-logout">
-                <i class="fas fa-sign-out-alt"></i> Déconnexion
-            </a>
-        </div>
-    </div>
+    {# Intégration de la barre de navigation #}
+    {% include 'Navbar/navbar_login.html.twig' %}
 
     <div class="events-container">
         <div class="events-list">
@@ -71,58 +65,6 @@
             padding: 2.5rem;
             max-width: 1200px;
             margin: 2rem auto;
-        }
-
-        .header {
-            background-color: var(--card-bg);
-            padding: 1rem 2rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-logout {
-            background-color: #dc3545;
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-logout:hover {
-            background-color: #c82333;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
-        }
-
-        .page-title {
-            color: var(--text-purple);
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0;
-            text-align: left;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            padding-bottom: 0.5rem;
-        }
-
-        .page-title::after {
-            display: none;
         }
 
         .events-list {
@@ -276,14 +218,6 @@
         @media (max-width: 768px) {
             .events-list {
                 grid-template-columns: 1fr;
-            }
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-            .page-title {
-                text-align: center;
             }
         }
     </style>
