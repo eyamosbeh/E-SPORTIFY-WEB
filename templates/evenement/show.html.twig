@@ -1,0 +1,117 @@
+{% extends 'baseBackOffice.html.twig' %}
+
+{% block title %}Détails Événement{% endblock %}
+
+{% block content %}
+<div class="edit-event-container">
+    <div class="page-header">
+        <h1 class="page-title">Détails de l'événement</h1>
+        <nav class="breadcrumb-container">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+                <li class="breadcrumb-item active">{{ evenement.nom }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="card edit-event-card">
+        <div class="card-body">
+            <div class="event-details">
+                <div class="detail-group">
+                    <label>Nom</label>
+                    <div class="detail-value">{{ evenement.nom }}</div>
+                </div>
+
+                <div class="detail-group">
+                    <label>Date</label>
+                    <div class="detail-value">{{ evenement.date ? evenement.date|date('d/m/Y') : '' }}</div>
+                </div>
+
+                <div class="detail-group">
+                    <label>Localisation</label>
+                    <div class="detail-value">{{ evenement.localisation }}</div>
+                </div>
+
+                <div class="detail-group">
+                    <label>Capacité</label>
+                    <div class="detail-value">{{ evenement.capacite }} personnes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ path('app_evenement_index') }}" class="btn btn-gradient-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        
+        <div class="action-group">
+            <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-gradient-primary">
+                <i class="fas fa-pencil-alt"></i> Modifier
+            </a>
+            <div class="delete-button">
+                {{ include('evenement/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    {% include 'evenement/shared/_form_styles.html.twig' %}
+
+    .event-details {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .detail-group {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px var(--input-shadow);
+        border: 1px solid var(--input-border);
+        transition: all 0.3s ease;
+    }
+
+    .detail-group:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-group label {
+        color: #64748b;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .detail-value {
+        color: #1e293b;
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .action-group {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+</style>
+{% endblock %}

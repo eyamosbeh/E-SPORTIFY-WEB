@@ -80,8 +80,8 @@ class SignInController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'redirect' => $user->getRole() === 'admin' ? 
-                $this->generateUrl('app_dashboard_admin') : 
+            'redirect' => in_array($user->getRole(), ['admin', 'organisateur']) ? 
+                $this->generateUrl('app_evenement_index') : 
                 $this->generateUrl('app_home')
         ]);
     }

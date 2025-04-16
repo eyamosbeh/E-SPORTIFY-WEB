@@ -1,0 +1,39 @@
+{% extends 'baseBackOffice.html.twig' %}
+
+{% block title %}Ajouter l'événement{% endblock %}
+
+{% block content %}
+<div class="edit-event-container">
+    <div class="page-header">
+        <h1 class="page-title">Ajouter un événement</h1>
+        <nav class="breadcrumb-container">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+                <li class="breadcrumb-item active">Nouveau</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="card edit-event-card">
+        <div class="card-body">
+            {{ include('evenement/_form.html.twig', {
+                'button_label': 'Créer',
+                'button_class': 'btn-gradient-primary'
+            }) }}
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ path('app_evenement_index') }}" class="btn btn-gradient-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    {% include 'evenement/shared/_form_styles.html.twig' %}
+</style>
+{% endblock %}

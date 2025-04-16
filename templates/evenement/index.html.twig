@@ -1,0 +1,300 @@
+{# templates/back_office/evenement/index.html.twig #}
+{% extends 'baseBackOffice.html.twig' %}
+
+{% block title %}Gestion des Événements{% endblock %}
+
+{% block page_title %}Gestion des Événements{% endblock %}
+{% block page_subtitle %}Liste des événements{% endblock %}
+
+{% block page_actions %}
+  <div class="d-flex gap-2">
+    <a href="{{ path('app_reservation_index') }}" class="btn btn-gradient-info mb_10">
+      <i class="fas fa-calendar-check"></i> Voir les réservations
+    </a>
+    <a href="{{ path('app_evenement_new') }}" class="btn btn-gradient-primary mb_10">
+      <i class="fas fa-plus"></i> Créer un nouvel événement
+    </a>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="white_card card_height_100 mb_30">
+        <div class="white_card_header">
+          <div class="box_header m-0">
+            <div class="main-title">
+              <h3 class="m-0">Liste des événements</h3>
+            </div>
+            <div class="header_more_tool">
+              <div class="dropdown">
+                <span class="dropdown-toggle" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v"></i>
+                </span>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#"><i class="fas fa-print"></i> Imprimer</a>
+                  <a class="dropdown-item" href="#"><i class="fas fa-download"></i> Exporter</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="white_card_body">
+          <div class="QA_section">
+            <div class="QA_table mb_0">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Localisation</th>
+                    <th scope="col">Capacité</th>
+                    <th scope="col" class="text-end">Actions</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% for evenement in evenements %}
+                    <tr>
+                      <td>{{ evenement.nom }}</td>
+                      <td>{{ evenement.date ? evenement.date|date('d/m/Y') : '' }}</td>
+                      <td>{{ evenement.localisation }}</td>
+                      <td>{{ evenement.capacite }} personnes</td>
+                      <td class="text-end">
+                        <div class="action_btns d-flex justify-content-end">
+                          <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}"
+                             class="btn btn-icon btn-gradient-info mr_10"
+                             title="Voir">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}"
+                             class="btn btn-icon btn-gradient-primary mr_10"
+                             title="Modifier">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <div class="delete-button">
+                            {{ include('evenement/_delete_form.html.twig') }}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="5" class="text-center">Aucun événement trouvé</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    {% include 'evenement/shared/_form_styles.html.twig' %}
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 1rem 0;
+        width: 100%;
+    }
+
+    .table-responsive {
+        background: white;
+        padding: 0;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .table thead {
+        background: var(--header-gradient);
+    }
+
+    .table thead th {
+        border: none;
+        color: white;
+        padding: 1.2rem 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table tbody tr {
+        background: white;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .table tbody td {
+        padding: 1.2rem 1rem;
+        border-right: 1px solid #e2e8f0;
+        vertical-align: middle;
+    }
+
+    .table tbody td:last-child {
+        border-right: none;
+    }
+
+    /* Style pour les boutons d'action */
+    .action_btns {
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        margin: 0 0.25rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .btn-gradient-info {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        color: white;
+        border: 2px solid #0284c7;
+    }
+
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: 2px solid #4f46e5;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Style pour la carte */
+    .white_card {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+        background: white;
+    }
+
+    .white_card_header {
+        background: var(--card-gradient);
+        padding: 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .main-title h3 {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    /* Style pour le message "Aucun événement" */
+    .table tbody tr.no-data td {
+        padding: 2rem;
+        text-align: center;
+        color: #64748b;
+        font-style: italic;
+        border-bottom: none;
+    }
+
+    /* Style pour les colonnes spécifiques */
+    .table td:nth-child(1) { /* Nom */
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .table td:nth-child(2) { /* Date */
+        color: #64748b;
+    }
+
+    .table td:nth-child(3) { /* Localisation */
+        color: #1e293b;
+    }
+
+    .table td:nth-child(4) { /* Capacité */
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Amélioration du menu déroulant */
+    .dropdown-menu {
+        border: 2px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 0.5rem;
+        min-width: 160px;
+    }
+
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        border-radius: 6px;
+        border: 1px solid transparent;
+    }
+
+    .dropdown-item:hover {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .delete-button form button {
+        background: #ef4444;
+        color: white;
+        border: 2px solid #dc2626;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        transition: all 0.3s ease;
+    }
+
+    .delete-button form button:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    $(document).ready(function() {
+      // Confirmation avant suppression
+      $('.delete-form').on('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+          this.submit();
+        }
+      });
+    });
+  </script>
+{% endblock %}

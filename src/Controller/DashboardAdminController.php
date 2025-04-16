@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Entity\Evenement;
+use App\Entity\Reservation;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,21 +32,72 @@ final class DashboardAdminController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        // Calculer les statistiques
-        $repository = $entityManager->getRepository(Utilisateur::class);
+        // Calculer les statistiques utilisateurs
+        $userRepository = $entityManager->getRepository(Utilisateur::class);
         
         // Compter les utilisateurs par rôle (excluant l'admin)
-        $joueurs = $repository->count(['role' => 'joueur']);
-        $vendeurs = $repository->count(['role' => 'vendeur']);
-        $organisateurs = $repository->count(['role' => 'organisateur']);
+        $joueurs = $userRepository->count(['role' => 'joueur']);
+        $vendeurs = $userRepository->count(['role' => 'vendeur']);
+        $organisateurs = $userRepository->count(['role' => 'organisateur']);
         
         // Calculer le total sans compter les admins
         $totalUtilisateurs = $joueurs + $vendeurs + $organisateurs;
 
         // Récupérer la liste de tous les utilisateurs sauf les admins
-        $utilisateurs = $repository->createQueryBuilder('u')
+        $utilisateurs = $userRepository->createQueryBuilder('u')
             ->where('u.role != :role')
             ->setParameter('role', 'admin')
+            ->getQuery()
+            ->getResult();
+            
+        // Statistiques des événements
+        $eventRepository = $entityManager->getRepository(Evenement::class);
+        $allEvents = $eventRepository->findAll();
+        $totalEvents = count($allEvents);
+        
+        // Compter les événements à venir et passés
+        $now = new \DateTime();
+        $upcomingEvents = 0;
+        $pastEvents = 0;
+        
+        foreach($allEvents as $event) {
+            if($event->getDate() > $now) {
+                $upcomingEvents++;
+            } else {
+                $pastEvents++;
+            }
+        }
+        
+        // Statistiques des réservations
+        $reservationRepository = $entityManager->getRepository(Reservation::class);
+        $allReservations = $reservationRepository->findAll();
+        $totalReservations = count($allReservations);
+        
+        // Compter les réservations récentes (dernière semaine)
+        $lastWeek = new \DateTime('-7 days');
+        $recentReservations = 0;
+        $totalParticipants = 0;
+        
+        foreach($allReservations as $reservation) {
+            $totalParticipants += $reservation->getNombrepersonnes();
+            if($reservation->getDateReservation() >= $lastWeek) {
+                $recentReservations++;
+            }
+        }
+        
+        // Obtenir les 5 dernières réservations
+        $latestReservations = $reservationRepository->findBy(
+            [], 
+            ['dateReservation' => 'DESC'],
+            5
+        );
+        
+        // Obtenir les 5 prochains événements
+        $upcomingEventsList = $eventRepository->createQueryBuilder('e')
+            ->where('e.date > :now')
+            ->setParameter('now', $now)
+            ->orderBy('e.date', 'ASC')
+            ->setMaxResults(5)
             ->getQuery()
             ->getResult();
 
@@ -53,9 +106,21 @@ final class DashboardAdminController extends AbstractController
                 'joueurs' => $joueurs,
                 'vendeurs' => $vendeurs,
                 'organisateurs' => $organisateurs,
-                'total' => $totalUtilisateurs
+                'total' => $totalUtilisateurs,
+                'events' => [
+                    'total' => $totalEvents,
+                    'upcoming' => $upcomingEvents,
+                    'past' => $pastEvents
+                ],
+                'reservations' => [
+                    'total' => $totalReservations,
+                    'recent' => $recentReservations,
+                    'participants' => $totalParticipants
+                ]
             ],
-            'utilisateurs' => $utilisateurs
+            'utilisateurs' => $utilisateurs,
+            'latestReservations' => $latestReservations,
+            'upcomingEvents' => $upcomingEventsList
         ]);
     }
 

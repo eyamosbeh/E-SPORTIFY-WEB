@@ -23,9 +23,21 @@
 		</a>
 		<ul class="side-menu top">
 			<li class="active">
-				<a href="#">
+				<a href="{{ path('app_dashboard_admin') }}">
 					<i class='bx bxs-dashboard' ></i>
 					<span class="text">Dashboard</span>
+				</a>
+			</li>
+			<li>
+				<a href="{{ path('app_evenement_index') }}">
+					<i class='bx bxs-calendar-event'></i>
+					<span class="text">Gestion Événements</span>
+				</a>
+			</li>
+			<li>
+				<a href="{{ path('app_reservation_index') }}">
+					<i class='bx bxs-receipt'></i>
+					<span class="text">Réservations</span>
 				</a>
 			</li>
 			<li>
@@ -139,7 +151,75 @@
 					</span>
 				</li>
 			</ul>
-
+			
+			<!-- Statistiques Événements et Réservations -->
+			<div class="head-title">
+				<div class="left">
+					<h1>Statistiques des Événements</h1>
+				</div>
+				<a href="{{ path('app_evenement_index') }}" class="btn-download">
+					<i class='bx bxs-calendar-event'></i>
+					<span class="text">Gérer les Événements</span>
+				</a>
+			</div>
+			
+			<ul class="box-info">
+				<li>
+					<i class='bx bxs-calendar'></i>
+					<span class="text">
+						<h3>{{ stats.events.total }}</h3>
+						<p>Événements Totaux</p>
+					</span>
+				</li>
+				<li>
+					<i class='bx bxs-calendar-check'></i>
+					<span class="text">
+						<h3>{{ stats.events.upcoming }}</h3>
+						<p>Événements à Venir</p>
+					</span>
+				</li>
+				<li>
+					<i class='bx bxs-calendar-x'></i>
+					<span class="text">
+						<h3>{{ stats.events.past }}</h3>
+						<p>Événements Passés</p>
+					</span>
+				</li>
+			</ul>
+			
+			<div class="head-title">
+				<div class="left">
+					<h1>Statistiques des Réservations</h1>
+				</div>
+				<a href="{{ path('app_reservation_index') }}" class="btn-download">
+					<i class='bx bxs-receipt'></i>
+					<span class="text">Gérer les Réservations</span>
+				</a>
+			</div>
+			
+			<ul class="box-info">
+				<li>
+					<i class='bx bxs-bookmark'></i>
+					<span class="text">
+						<h3>{{ stats.reservations.total }}</h3>
+						<p>Réservations Totales</p>
+					</span>
+				</li>
+				<li>
+					<i class='bx bxs-user-plus'></i>
+					<span class="text">
+						<h3>{{ stats.reservations.participants }}</h3>
+						<p>Participants</p>
+					</span>
+				</li>
+				<li>
+					<i class='bx bxs-time'></i>
+					<span class="text">
+						<h3>{{ stats.reservations.recent }}</h3>
+						<p>Réservations Récentes</p>
+					</span>
+				</li>
+			</ul>
 
 			<div class="table-data">
 				<div class="order">
@@ -193,6 +273,68 @@
 										<span style="color: #666;">Non bloquable</span>
 									{% endif %}
 								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="todo">
+					<div class="head">
+						<h3>Prochains Événements</h3>
+						<i class='bx bx-plus'></i>
+						<i class='bx bx-filter'></i>
+					</div>
+					<ul class="todo-list">
+						{% for event in upcomingEvents %}
+							<li class="completed">
+								<p>{{ event.nom }} - {{ event.date|date('d/m/Y H:i') }}</p>
+								<i class='bx bx-dots-vertical-rounded'></i>
+							</li>
+						{% else %}
+							<li>
+								<p>Aucun événement à venir</p>
+							</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</div>
+			
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<h3>Dernières Réservations</h3>
+						<i class='bx bx-search'></i>
+						<i class='bx bx-filter'></i>
+					</div>
+					<table>
+						<thead>
+							<tr>
+								<th>Événement</th>
+								<th>Personne</th>
+								<th>Nb personnes</th>
+								<th>Date</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for reservation in latestReservations %}
+							<tr>
+								<td>
+									<p>{{ reservation.evenement.nom }}</p>
+								</td>
+								<td>
+									{% if reservation.utilisateur %}
+										{{ reservation.utilisateur.prenom }} {{ reservation.utilisateur.nom }}
+									{% else %}
+										Invité
+									{% endif %}
+								</td>
+								<td>{{ reservation.nombrepersonnes }}</td>
+								<td>{{ reservation.dateReservation|date('d/m/Y H:i') }}</td>
+							</tr>
+							{% else %}
+							<tr>
+								<td colspan="4" class="text-center">Aucune réservation</td>
 							</tr>
 							{% endfor %}
 						</tbody>
