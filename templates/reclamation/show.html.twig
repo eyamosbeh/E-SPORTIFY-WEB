@@ -1,16 +1,13 @@
-{% extends 'base.html.twig' %}
+{% extends 'reclamation/index.html.twig' %}
 
 {% block title %}Détail de la Réclamation{% endblock %}
 
 {% block body %}
+<style>body, .container, .content, .main-content { background: #fff !important; }</style>
+{% include 'Navbar/navbar_login.html.twig' %}
+
 <div class="container animate-fade-in">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_reclamation_index') }}">Réclamations</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Réclamation #{{ reclamation.id }}</li>
-        </ol>
-    </nav>
+    
 
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">

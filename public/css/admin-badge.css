@@ -1,0 +1,7 @@
+.badge-animate {
+  animation: badgePulse 1s infinite alternate;
+}
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220,53,69,0.7);}
+  100% { box-shadow: 0 0 10px 5px rgba(220,53,69,0.3);}
+}

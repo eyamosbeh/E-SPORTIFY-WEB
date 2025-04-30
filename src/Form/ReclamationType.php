@@ -18,6 +18,7 @@ class ReclamationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isEdit = $options['is_edit'] ?? false;
         $builder
             ->add('description', TextareaType::class, [
                 'attr' => [
@@ -49,18 +50,6 @@ class ReclamationType extends AbstractType
                     new NotBlank(['message' => 'La catégorie ne peut pas être vide'])
                 ]
             ])
-            ->add('statut', ChoiceType::class, [
-                'choices' => [
-                    'En attente' => 'En attente',
-                    'En cours' => 'En cours',
-                    'Résolue' => 'Résolue'
-                ],
-                'required' => true,
-                'attr' => [
-                    'class' => 'form-select'
-                ],
-                'label' => 'Statut'
-            ])
             ->add('imageFile', FileType::class, [
                 'mapped' => false,
                 'required' => false,
@@ -91,7 +80,23 @@ class ReclamationType extends AbstractType
                     ])
                 ],
                 'label' => 'Document PDF (optionnel)'
-            ])
+            ]);
+
+        // Ajouter le champ statut uniquement en édition
+        if ($isEdit) {
+            $builder->add('statut', ChoiceType::class, [
+                'choices' => [
+                    'En attente' => 'En attente',
+                    'En cours' => 'En cours',
+                    'Résolue' => 'Résolue'
+                ],
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-select'
+                ],
+                'label' => 'Statut'
+            ]);
+        }
         ;
     }
 
@@ -99,6 +104,9 @@ class ReclamationType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Reclamation::class,
+            'is_edit' => false,
         ]);
+
+        $resolver->setAllowedTypes('is_edit', 'bool');
     }
 } 

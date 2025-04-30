@@ -47,6 +47,7 @@ class ReclamationController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $reclamation = new Reclamation();
+        $reclamation->setStatut('En attente');
         // La date est déjà initialisée dans le constructeur
         
         $form = $this->createForm(ReclamationType::class, $reclamation);
@@ -139,7 +140,9 @@ class ReclamationController extends AbstractController
     #[Route('/{id}/edit', name: 'app_reclamation_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
-        $form = $this->createForm(ReclamationType::class, $reclamation);
+        $form = $this->createForm(ReclamationType::class, $reclamation, [
+            'is_edit' => true
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {

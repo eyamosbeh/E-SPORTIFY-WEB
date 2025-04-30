@@ -7,6 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\Constraints as CustomAssert;
+use App\Validator\Constraints\NoBadWords;
 
 use App\Repository\ReclamationRepository;
 
@@ -24,9 +26,15 @@ class Reclamation
         return $this->id;
     }
 
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "La description ne peut pas être vide")]
-    #[Assert\Length(min: 10, minMessage: "La description doit contenir au moins {{ limit }} caractères")]
+    #[Assert\Length(
+        min: 10,
+        max: 1000,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères",
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
+    )]
+    #[NoBadWords]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -162,8 +170,9 @@ class Reclamation
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "La catégorie ne peut pas être vide")]
+    #[CustomAssert\NoBadWords(message: "La catégorie contient des mots inappropriés.")]
     private ?string $categorie = null;
 
     public function getCategorie(): ?string
