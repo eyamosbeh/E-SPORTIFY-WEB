@@ -1,0 +1,1169 @@
+{% extends 'baseBackOffice.html.twig' %}
+
+{% block title %}Vlog Posts Management{% endblock %}
+
+{% block content %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --secondary-light: #34d399;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --gray: #6b7280;
+            --light-gray: #e5e7eb;
+            --background: #f8fafc;
+            --white: #ffffff;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition-normal: all 0.3s ease;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background);
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 1rem;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .dashboard-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition-normal);
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .filters {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-input {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: var(--transition-normal);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            color: var(--dark);
+        }
+
+        .search-input::placeholder {
+            color: var(--gray);
+            opacity: 0.7;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1rem;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition-normal);
+        }
+
+        .btn-clear-search:hover {
+            background-color: var(--light-gray);
+            color: var(--dark);
+        }
+
+        .sort-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sort-btn, .stats-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            background-color: var(--white);
+            color: var(--dark);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .sort-btn i, .stats-btn i {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .sort-btn:hover, .stats-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .sort-btn.active {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .sort-btn.active[data-sort-order="ASC"] i {
+            transform: rotate(180deg);
+        }
+
+        .stats-btn {
+            background-color: var(--secondary);
+            color: var(--white);
+        }
+
+        .stats-btn:hover {
+            background-color: var(--secondary-light);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            background-color: var(--white);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        th {
+            background-color: rgba(241, 245, 249, 0.8);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            color: var(--gray);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+
+        tr {
+            transition: var(--transition-normal);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: rgba(241, 245, 249, 0.5);
+        }
+
+        td img {
+            max-width: 100px;
+            height: auto;
+            border-radius: var(--border-radius);
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: var(--transition-normal);
+        }
+
+        td img:hover {
+            transform: scale(1aucune donnée05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        td .no-image {
+            background-color: var(--light-gray);
+            color: var(--gray);
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            display: inline-block;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .category {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            transition: var(--transition-normal);
+        }
+
+        .category:hover {
+            background-color: rgba(16, 185, 129, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .description {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            color: var(--gray);
+            transition: var(--transition-normal);
+            cursor: pointer;
+        }
+
+        .description:hover {
+            color: var(--dark);
+        }
+
+        .description.expanded {
+            -webkit-line-clamp: unset;
+            max-height: none;
+        }
+
+        .timestamp {
+            color: var(--gray);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .timestamp i {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .likes-dislikes {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .likes-dislikes button {
+            background: none;
+            border: 1px solid var(--light-gray);
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark);
+            transition: var(--transition-normal);
+        }
+
+        .likes-dislikes button i {
+            font-size: 0.9rem;
+        }
+
+        .likes-dislikes button:hover {
+            background-color: var(--light-gray);
+            transform: translateY(-2px);
+        }
+
+        .likes-dislikes button.liked {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            border-color: var(--primary-light);
+        }
+
+        .likes-dislikes button.disliked {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .status.active {
+            color: var(--secondary);
+        }
+
+        .status.inactive {
+            color: var(--gray);
+        }
+
+        .status i {
+            font-size: 0.8rem;
+        }
+
+        .signaled {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--danger);
+        }
+
+        .signaled i {
+            font-size: 0.9rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .actions a {
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            color: var(--white);
+            background-color: var(--primary);
+            transition: var(--transition-normal);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .actions a:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .actions a.delete {
+            background-color: var(--danger);
+        }
+
+        .actions a.delete:hover {
+            background-color: #dc2626;
+        }
+
+        .actions a i {
+            font-size: 0.8rem;
+        }
+
+        .no-posts {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--gray);
+            font-size: 1.25rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .no-posts i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .search-loading {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            display: none;
+        }
+
+        .search-loading.active {
+            display: block;
+            animation: pulse 1.5s infinite ease-in-out, spin 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        /* Tooltip */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        [data-tooltip]:after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--dark) transparent transparent transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        [data-tooltip]:hover:before,
+        [data-tooltip]:hover:after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        /* Responsive design improvements */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            td img {
+                max-width: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .filter-input {
+                min-width: 100%;
+            }
+
+            .sort-buttons {
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                flex-wrap: nowrap;
+            }
+
+            td, th {
+                padding: 0.75rem;
+            }
+
+            .description {
+                max-width: 180px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            td img {
+                max-width: 60px;
+            }
+
+            .description {
+                max-width: 120px;
+            }
+
+            .likes-dislikes {
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .actions a {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+
+    <div class="container">
+        <h1>Manage Vlog Posts</h1>
+
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <a href="{{ path('app_post_stats') }}" class="stats-btn">
+                <i class="fas fa-chart-line"></i> View Statistics
+            </a>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="dashboard-card filters">
+            <form id="filterForm" method="GET" action="{{ path('app_post_search') }}">
+                <div class="filter-row">
+                    <div class="filter-input">
+                        <input type="text" id="search-title" name="search" class="search-input" placeholder="Search by title..." value="">
+                        <button type="button" id="clearSearch" class="btn-clear-search" aria-label="Clear search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <i class="fas fa-spinner search-loading"></i>
+                    </div>
+                    <div class="filter-input">
+                        <select id="filter-category" name="category" class="search-input">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-input">
+                        <select id="filter-status" name="status" class="search-input">
+                            <option value="">Status: All</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="filter-input">
+                        <select id="filter-signaled" name="signaled" class="search-input">
+                            <option value="">Signaled: All</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="sort-buttons">
+            <button class="sort-btn active" data-sort-by="updatedAt" data-sort-order="DESC">
+                <i class="fas fa-calendar-alt"></i> Updated <i class="fas fa-chevron-down"></i>
+            </button>
+            <button class="sort-btn" data-sort-by="likeCount" data-sort-order="DESC">
+                <i class="fas fa-thumbs-up"></i> Likes <i class="fas fa-chevron-down"></i>
+            </button>
+            <button class="sort-btn" data-sort-by="dislikeCount" data-sort-order="DESC">
+                <i class="fas fa-thumbs-down"></i> Dislikes <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table id="posts-table">
+                <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Image</th>
+                    <th>Updated</th>
+                    <th>Likes</th>
+                    <th>Dislikes</th>
+                    <th>Status</th>
+                    <th>Signaled</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% include 'post/_posts_table.html.twig' %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterForm = document.getElementById('filterForm');
+            const searchTitle = document.getElementById('search-title');
+            const filterCategory = document.getElementById('filter-category');
+            const filterStatus = document.getElementById('filter-status');
+            const filterSignaled = document.getElementById('filter-signaled');
+            const clearSearch = document.getElementById('clearSearch');
+            const sortButtons = document.querySelectorAll('.sort-btn');
+            const tableBody = document.querySelector('#posts-table tbody');
+            const tableContainer = document.querySelector('.table-container');
+            const loadingIndicator = document.querySelector('.search-loading');
+
+            let currentSortBy = 'updatedAt';
+            let currentSortOrder = 'DESC';
+            let searchTimeout = null;
+            let lastSearchQuery = '';
+            const debounceDelay = 300;
+            const minQueryLength = 1;
+
+            // Update clear button visibility
+            function updateClearButtons() {
+                clearSearch.style.display = searchTitle.value ? 'block' : 'none';
+            }
+
+            // Enhanced search with loading animation
+            function performSearch() {
+                const search = searchTitle.value.trim();
+                const category = filterCategory.value;
+                const status = filterStatus.value;
+                const signaled = filterSignaled.value;
+
+                // Cache the search to avoid unnecessary API calls
+                const currentQuery = `${search}-${category}-${status}-${signaled}-${currentSortBy}-${currentSortOrder}`;
+                if (currentQuery === lastSearchQuery) return;
+                lastSearchQuery = currentQuery;
+
+                // Allow search even with minimal input
+                if (search.length < minQueryLength && !category && !status && !signaled) {
+                    resetToInitialState();
+                    return;
+                }
+
+                // Show loading animation
+                loadingIndicator.classList.add('active');
+                tableBody.style.opacity = '0.7';
+                tableBody.style.transition = 'opacity 0.3s';
+
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                if (category) params.append('category', category);
+                if (status) params.append('status', status);
+                if (signaled) params.append('signaled', signaled);
+                params.append('sortBy', currentSortBy);
+                params.append('sortOrder', currentSortOrder);
+
+                fetch(`{{ path('app_post_search') }}?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                        return response.text();
+                    })
+                    .then(html => {
+                        // Animate the table update
+                        fadeOut(tableBody, () => {
+                            tableBody.innerHTML = html;
+                            fadeIn(tableBody);
+                            tableContainer.style.display = html.includes('no-posts') ? 'block' : 'block';
+                            loadingIndicator.classList.remove('active');
+                            attachEventListeners();
+                            announceSearchResults();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        showErrorMessage();
+                        loadingIndicator.classList.remove('active');
+                    });
+            }
+
+            // Fade out animation
+            function fadeOut(element, callback) {
+                element.style.opacity = '0';
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 200);
+            }
+
+            // Fade in animation
+            function fadeIn(element) {
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                }, 50);
+            }
+
+            // Reset to initial state with animation
+            function resetToInitialState() {
+                loadingIndicator.classList.add('active');
+                fadeOut(tableBody, () => {
+                    fetch('{{ path('app_post_search') }}', {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                            return response.text();
+                        })
+                        .then(html => {
+                            tableBody.innerHTML = html;
+                            fadeIn(tableBody);
+                            tableContainer.style.display = 'block';
+                            loadingIndicator.classList.remove('active');
+                            attachEventListeners();
+                            announceSearchResults();
+                        })
+                        .catch(error => {
+                            console.error('Reset error:', error);
+                            showErrorMessage();
+                            loadingIndicator.classList.remove('active');
+                        });
+                });
+            }
+
+            // Show error message with animation
+            function showErrorMessage() {
+                fadeOut(tableBody, () => {
+                    tableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="no-posts">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error loading posts. Please try again.</p>
+                        <button class="sort-btn" onclick="location.reload()">Retry</button>
+                    </td>
+                </tr>`;
+                    fadeIn(tableBody);
+                    tableContainer.style.display = 'block';
+                });
+            }
+
+            // Announce search results for accessibility
+            function announceSearchResults() {
+                const rows = document.querySelectorAll('#posts-table tbody tr');
+                const announcement = `Search completed. ${rows.length} posts found.`;
+                const liveRegion = document.createElement('div');
+                liveRegion.setAttribute('aria-live', 'polite');
+                liveRegion.setAttribute('class', 'sr-only');
+                liveRegion.textContent = announcement;
+                document.body.appendChild(liveRegion);
+                setTimeout(() => liveRegion.remove(), 1000);
+            }
+
+            // Attach all event listeners
+            function attachEventListeners() {
+                attachLikeDislikeListeners();
+                attachDescriptionExpandListeners();
+            }
+
+            // Toggle description expansion
+            function attachDescriptionExpandListeners() {
+                const descriptions = document.querySelectorAll('.description');
+                descriptions.forEach(desc => {
+                    desc.addEventListener('click', () => {
+                        desc.classList.toggle('expanded');
+                    });
+                });
+            }
+
+            // Attach like/dislike listeners with animations
+            function attachLikeDislikeListeners() {
+                const likeButtons = document.querySelectorAll('.like-btn');
+                const dislikeButtons = document.querySelectorAll('.dislike-btn');
+
+                const sendRequest = async (url, csrfToken) => {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: `_token=${encodeURIComponent(csrfToken)}`,
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+
+                        return response.json();
+                    } catch (error) {
+                        console.error('Request error:', error);
+                        throw error;
+                    }
+                };
+
+                likeButtons.forEach(button => {
+                    button.addEventListener('click', async () => {
+                        // Add click animation
+                        button.classList.add('clicked');
+                        setTimeout(() => button.classList.remove('clicked'), 300);
+
+                        const postId = button.closest('.likes-dislikes').dataset.postId;
+                        const csrfToken = button.dataset.csrfToken;
+                        const url = `{{ path('app_post_like', {'id': 'POST_ID'}) }}`.replace('POST_ID', postId);
+
+                        try {
+                            const data = await sendRequest(url, csrfToken);
+                            if (data.error) {
+                                showToast(data.error, 'error');
+                                return;
+                            }
+
+                            const likesDislikesDiv = button.closest('.likes-dislikes');
+
+                            // Animate counter change
+                            animateCounterChange(likesDislikesDiv.querySelector('.like-count'), data.likeCount);
+                            const row = button.closest('tr');
+                            animateCounterChange(row.querySelector('.dislike-count'), data.dislikeCount);
+
+                            // Toggle button states with animation
+                            toggleButtonState(button, 'liked', data.hasLiked);
+                            toggleButtonState(row.querySelector('.dislike-btn'), 'disliked', data.hasDisliked);
+
+                            showToast('Like updated!', 'success');
+                        } catch (error) {
+                            console.error('Like error:', error);
+                            showToast('An error occurred while processing your request.', 'error');
+                        }
+                    });
+                });
+
+                dislikeButtons.forEach(button => {
+                    button.addEventListener('click', async () => {
+                        // Add click animation
+                        button.classList.add('clicked');
+                        setTimeout(() => button.classList.remove('clicked'), 300);
+
+                        const postId = button.closest('.likes-dislikes').dataset.postId;
+                        const csrfToken = button.dataset.csrfToken;
+                        const url = `{{ path('app_post_dislike', {'id': 'POST_ID'}) }}`.replace('POST_ID', postId);
+
+                        try {
+                            const data = await sendRequest(url, csrfToken);
+                            if (data.error) {
+                                showToast(data.error, 'error');
+                                return;
+                            }
+
+                            const likesDislikesDiv = button.closest('.likes-dislikes');
+
+                            // Animate counter change
+                            animateCounterChange(likesDislikesDiv.querySelector('.dislike-count'), data.dislikeCount);
+                            const row = button.closest('tr');
+                            animateCounterChange(row.querySelector('.like-count'), data.likeCount);
+
+                            // Toggle button states with animation
+                            toggleButtonState(button, 'disliked', data.hasDisliked);
+                            toggleButtonState(row.querySelector('.like-btn'), 'liked', data.hasLiked);
+
+                            showToast('Dislike updated!', 'success');
+                        } catch (error) {
+                            console.error('Dislike error:', error);
+                            showToast('An error occurred while processing your request.', 'error');
+                        }
+                    });
+                });
+            }
+
+            // Animate counter change
+            function animateCounterChange(element, newValue) {
+                element.style.transition = 'transform 0.3s, opacity 0.3s';
+                element.style.transform = 'translateY(-5px)';
+                element.style.opacity = '0';
+
+                setTimeout(() => {
+                    element.textContent = newValue;
+                    element.style.transform = 'translateY(0)';
+                    element.style.opacity = '1';
+                }, 300);
+            }
+
+            // Toggle button state with animation
+            function toggleButtonState(button, className, state) {
+                if (state && !button.classList.contains(className)) {
+                    button.classList.add(className);
+                    button.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        button.style.transform = 'scale(1)';
+                    }, 200);
+                } else if (!state && button.classList.contains(className)) {
+                    button.classList.remove(className);
+                    button.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        button.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            }
+
+            // Toast notification system
+            function showToast(message, type = 'info') {
+                // Create toast container if it doesn't exist
+                let toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.className = 'toast-container';
+                    document.body.appendChild(toastContainer);
+
+                    // Add toast container styles
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .toast-container {
+                            position: fixed;
+                            bottom: 20px;
+                            right: 20px;
+                            z-index: 1000;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        .toast {
+                            padding: 12px 20px;
+                            border-radius: 6px;
+                            color: white;
+                            font-size: 14px;
+                            font-weight: 500;
+                            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            transform: translateX(100%);
+                            animation: slideIn 0.3s forwards, fadeOut 0.3s 2.5s forwards;
+                            max-width: 300px;
+                        }
+                        .toast i {
+                            font-size: 16px;
+                        }
+                        .toast.success {
+                            background-color: var(--secondary);
+                        }
+                        .toast.error {
+                            background-color: var(--danger);
+                        }
+                        .toast.info {
+                            background-color: var(--primary);
+                        }
+                        @keyframes slideIn {
+                            to { transform: translateX(0); }
+                        }
+                        @keyframes fadeOut {
+                            to { opacity: 0; visibility: hidden; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                // Create toast
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+
+                // Add icon based on type
+                let icon = '';
+                switch(type) {
+                    case 'success':
+                        icon = '<i class="fas fa-check-circle"></i>';
+                        break;
+                    case 'error':
+                        icon = '<i class="fas fa-exclamation-circle"></i>';
+                        break;
+                    default:
+                        icon = '<i class="fas fa-info-circle"></i>';
+                }
+
+                toast.innerHTML = `${icon} ${message}`;
+                toastContainer.appendChild(toast);
+
+                // Remove toast after animation completes
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            // Input event listeners with debounce
+            [searchTitle, filterCategory, filterStatus, filterSignaled].forEach(input => {
+                input.addEventListener('input', () => {
+                    updateClearButtons();
+                    clearTimeout(searchTimeout);
+
+                    // Show loading indicator immediately for better UX
+                    if (input === searchTitle) {
+                        loadingIndicator.classList.add('active');
+                    }
+
+                    searchTimeout = setTimeout(performSearch, debounceDelay);
+                });
+
+                // Add animation on focus
+                input.addEventListener('focus', () => {
+                    input.style.transform = 'translateY(-2px)';
+                    input.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                });
+
+                input.addEventListener('blur', () => {
+                    input.style.transform = 'translateY(0)';
+                    input.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                });
+            });
+
+            // Clear search button with animation
+            clearSearch.addEventListener('click', () => {
+                searchTitle.value = '';
+                updateClearButtons();
+
+                // Add button click animation
+                clearSearch.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    clearSearch.style.transform = 'scale(1)';
+                }, 200);
+
+                searchTitle.focus();
+                performSearch();
+            });
+
+            // Sort buttons with enhanced animation
+            sortButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sortBy = button.dataset.sortBy;
+                    let sortOrder = button.dataset.sortOrder;
+
+                    // Add click animation
+                    button.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        button.style.transform = 'translateY(-2px)';
+                    }, 200);
+
+                    if (currentSortBy === sortBy) {
+                        sortOrder = sortOrder === 'ASC' ? 'DESC' : 'ASC';
+                        button.dataset.sortOrder = sortOrder;
+                    } else {
+                        sortButtons.forEach(btn => {
+                            btn.classList.remove('active');
+                            btn.style.transform = 'scale(1)';
+                        });
+                        button.classList.add('active');
+                    }
+
+                    currentSortBy = sortBy;
+                    currentSortOrder = sortOrder;
+
+                    // Update icon in sort button
+                    const iconElement = button.querySelector('i:last-child');
+                    iconElement.className = sortOrder === 'ASC' ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+
+                    // Animate icon change
+                    iconElement.style.transition = 'transform 0.3s';
+                    iconElement.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        iconElement.style.transform = 'scale(1)';
+                    }, 300);
+
+                    performSearch();
+                });
+            });
+
+            // Initial setup
+            updateClearButtons();
+            attachEventListeners();
+
+            // Add image loading animation
+            document.querySelectorAll('td img').forEach(img => {
+                img.style.opacity = '0';
+                img.onload = function() {
+                    this.style.transition = 'opacity 0.5s ease';
+                    this.style.opacity = '1';
+                };
+            });
+
+            // Add table row entrance animation
+            document.querySelectorAll('tbody tr').forEach((row, index) => {
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(10px)';
+                row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+                setTimeout(() => {
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, 50 * index); // Staggered animation
+            });
+        });
+    </script>
+
+    <!-- Include necessary icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+{% endblock %}

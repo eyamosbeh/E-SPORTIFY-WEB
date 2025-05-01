@@ -1,0 +1,817 @@
+{% extends 'baseBackOffice.html.twig' %}
+
+{% block title %}Gestion des Commentaires{% endblock %}
+
+{% block content %}
+    <div class="comment-container">
+        <div class="comment-header">
+            <h1 class="mb-3">Gestion des Commentaires</h1>
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher un commentaire..." id="searchInput">
+                    <span class="search-clear" id="clearSearch">&times;</span>
+                </div>
+                <div class="mt-3 filter-options">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="signaledFilter">
+                        <span class="checkmark"></span>
+                        <span class="filter-text">Afficher uniquement les commentaires signalés</span>
+                    </label>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center stats-container">
+                <div class="stats-badges">
+                    <div class="badge badge-success me-2" id="totalCount">
+                        <i class="fas fa-comments"></i>
+                        <span>Total: {{ commentaires|length }}</span>
+                    </div>
+                    <div class="badge badge-warning" id="signaledCount">
+                        <i class="fas fa-flag"></i>
+                        <span>Signalés: {{ commentaires|filter(c => c.signaled)|length }}</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Rafraîchir</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="commentsList" class="comments-list-container">
+            {% include 'commentaire/_comments_list.html.twig' %}
+        </div>
+    </div>
+
+    <style>
+        /* Variables */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #0bb4aa;
+            --danger: #e63946;
+            --warning: #f9c74f;
+            --info: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --border-radius-sm: 0.25rem;
+            --border-radius-md: 0.5rem;
+            --border-radius-lg: 1rem;
+        }
+
+        /* Base Container */
+        .comment-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        /* Header Section */
+        .comment-header {
+            background: linear-gradient(to right, var(--light), #ffffff);
+            padding: 2rem;
+            border-radius: var(--border-radius-md);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-10px);
+            opacity: 0;
+            animation: slideDown 0.5s ease 0.2s forwards;
+        }
+
+        .comment-header h1 {
+            color: var(--dark);
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .comment-header h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: expandWidth 0.6s ease 0.6s forwards;
+        }
+
+        /* Search Box */
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 2.5rem;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            transition: var(--transition-fast);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 1.25rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: var(--transition-fast);
+        }
+
+        .search-clear:hover {
+            opacity: 1;
+            color: var(--danger);
+        }
+
+        /* Custom Checkbox */
+        .filter-options {
+            padding-left: 0.5rem;
+        }
+
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: relative;
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border: 2px solid var(--gray-light);
+            border-radius: 4px;
+            transition: var(--transition-fast);
+        }
+
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .filter-text {
+            margin-left: 8px;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+
+        /* Stats Container */
+        .stats-container {
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: var(--border-radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--gray-light);
+        }
+
+        .stats-badges {
+            display: flex;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-md);
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .badge i {
+            margin-right: 0.5rem;
+        }
+
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--border-radius-md);
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Comments List Container */
+        .comments-list-container {
+            min-height: 200px;
+            position: relative;
+        }
+
+        /* Comment Cards */
+        .comment-card {
+            background-color: white;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+            overflow: hidden;
+            border-left: 4px solid transparent;
+        }
+
+        .comment-card:nth-child(1) { animation-delay: 0.1s; }
+        .comment-card:nth-child(2) { animation-delay: 0.2s; }
+        .comment-card:nth-child(3) { animation-delay: 0.3s; }
+        .comment-card:nth-child(4) { animation-delay: 0.4s; }
+        .comment-card:nth-child(5) { animation-delay: 0.5s; }
+        .comment-card:nth-child(n+6) { animation-delay: 0.6s; }
+
+        .comment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .comment-card.signaled {
+            border-left-color: var(--danger);
+        }
+
+        .comment-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: linear-gradient(to right, var(--light), white);
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .comment-author-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .comment-date {
+            color: var(--gray);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .comment-date i {
+            margin-right: 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .comment-id {
+            color: var(--gray);
+            font-size: 0.8rem;
+            background-color: var(--light);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--border-radius-sm);
+            margin-left: auto;
+        }
+
+        .comment-status {
+            display: flex;
+            align-items: center;
+        }
+
+        .comment-content {
+            padding: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: white;
+        }
+
+        .comment-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background-color: var(--light);
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background-color: var(--light);
+            border-radius: var(--border-radius-md);
+            color: var(--gray);
+            animation: fadeIn 0.5s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            opacity: 0;
+            animation: fadeIn 0.5s ease 0.7s forwards;
+        }
+
+        .page-item {
+            margin: 0 0.25rem;
+        }
+
+        .page-link {
+            padding: 0.6rem 1rem;
+            border-radius: var(--border-radius-md);
+            background-color: white;
+            border: 1px solid var(--gray-light);
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-link:hover {
+            background-color: var(--light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes expandWidth {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .comment-header {
+                padding: 1.5rem;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .comment-metadata {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .comment-id {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .comment-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const clearSearch = document.getElementById('clearSearch');
+            const signaledFilter = document.getElementById('signaledFilter');
+            const commentsList = document.getElementById('commentsList');
+            const totalCount = document.getElementById('totalCount');
+            const signaledCount = document.getElementById('signaledCount');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            // Add loading indicator to the DOM
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.className = 'loading-indicator';
+            loadingIndicator.innerHTML = `
+                <div class="loading-spinner"></div>
+                <p>Chargement en cours...</p>
+            `;
+            commentsList.appendChild(loadingIndicator);
+
+            function showLoading() {
+                loadingIndicator.style.display = 'block';
+                commentsList.querySelectorAll('.comment-card, .empty-state, .pagination').forEach(el => {
+                    el.style.opacity = '0.3';
+                });
+            }
+
+            function hideLoading() {
+                loadingIndicator.style.display = 'none';
+                commentsList.querySelectorAll('.comment-card, .empty-state, .pagination').forEach(el => {
+                    el.style.opacity = '1';
+                });
+            }
+
+            function fetchComments(search = '', signaled = null) {
+                showLoading();
+
+                const url = new URL('{{ path('app_commentaire_search') }}', window.location.origin);
+                url.searchParams.append('search', search);
+                if (signaled !== null) {
+                    url.searchParams.append('signaled', signaled);
+                }
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        // Add animation class to fade out the content
+                        commentsList.style.opacity = '0';
+
+                        setTimeout(() => {
+                            commentsList.innerHTML = html;
+                            hideLoading();
+
+                            // Re-append the loading indicator after updating the content
+                            commentsList.appendChild(loadingIndicator);
+
+                            // Update badges
+                            const commentCards = commentsList.querySelectorAll('.comment-card');
+                            const signaledComments = Array.from(commentCards).filter(card =>
+                                card.querySelector('.badge').textContent.includes('Signalé')
+                            );
+
+                            // Animate the counters
+                            animateCounter(totalCount.querySelector('span'), commentCards.length);
+                            animateCounter(signaledCount.querySelector('span'), signaledComments.length);
+
+                            // Fade in the new content
+                            commentsList.style.opacity = '1';
+
+                            // Add staggered animation to comment cards
+                            commentsList.querySelectorAll('.comment-card').forEach((card, index) => {
+                                card.style.animationDelay = `${0.1 * (index + 1)}s`;
+                            });
+                        }, 300);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching comments:', error);
+                        commentsList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>Erreur</h3>
+                                <p>Une erreur s'est produite lors de la recherche.</p>
+                            </div>
+                        `;
+                        hideLoading();
+                    });
+            }
+
+            // Function to animate counter
+            function animateCounter(element, target) {
+                const text = element.textContent;
+                const prefix = text.split(':')[0] + ': ';
+                const start = parseInt(text.split(':')[1].trim()) || 0;
+                const duration = 800;
+                const step = Math.ceil((target - start) / 20);
+
+                let current = start;
+                const timer = setInterval(() => {
+                    current = current + step;
+                    if ((step > 0 && current >= target) || (step < 0 && current <= target)) {
+                        clearInterval(timer);
+                        element.textContent = `${prefix}${target}`;
+                    } else {
+                        element.textContent = `${prefix}${current}`;
+                    }
+                }, duration / 20);
+            }
+
+            // Debounce function to limit how often the search is triggered
+            function debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            // Event listener for search input
+            const debouncedFetchComments = debounce((search, signaled) => {
+                fetchComments(search, signaled);
+            }, 300);
+
+            searchInput.addEventListener('input', () => {
+                const search = searchInput.value.trim();
+                const signaled = signaledFilter.checked ? true : null;
+
+                // Show/hide clear button based on input
+                clearSearch.style.display = search ? 'block' : 'none';
+
+                debouncedFetchComments(search, signaled);
+            });
+
+            // Clear search button
+            clearSearch.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+                const signaled = signaledFilter.checked ? true : null;
+                fetchComments('', signaled);
+                searchInput.focus();
+            });
+
+            // Initially hide clear button
+            clearSearch.style.display = 'none';
+
+            // Event listener for signaled filter checkbox
+            signaledFilter.addEventListener('change', () => {
+                const search = searchInput.value.trim();
+                const signaled = signaledFilter.checked ? true : null;
+                fetchComments(search, signaled);
+            });
+
+            // Event listener for refresh button
+            refreshBtn.addEventListener('click', () => {
+                // Add rotation animation to refresh icon
+                const refreshIcon = refreshBtn.querySelector('i');
+                refreshIcon.style.animation = 'spin 1s linear';
+
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+                signaledFilter.checked = false;
+                fetchComments('', null);
+
+                // Remove animation after it completes
+                setTimeout(() => {
+                    refreshIcon.style.animation = '';
+                }, 1000);
+            });
+
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const x = e.clientX - e.target.getBoundingClientRect().left;
+                    const y = e.clientY - e.target.getBoundingClientRect().top;
+
+                    const ripple = document.createElement('span');
+                    ripple.className = 'ripple';
+                    ripple.style.cssText = `
+                        position: absolute;
+                        background-color: rgba(255, 255, 255, 0.7);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s linear;
+                        pointer-events: none;
+                    `;
+
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Add ripple animation
+            const style = document.createElement('style');
+            style.textContent = `
+                .btn {
+                    position: relative;
+                    overflow: hidden;
+                }
+                @keyframes ripple {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+                .ripple {
+                    width: 20px;
+                    height: 20px;
+                    opacity: 1;
+                    transform: translate(-50%, -50%);
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Initialize the first letters for author avatars
+            function initializeAuthorAvatars() {
+                document.querySelectorAll('.author-avatar').forEach(avatar => {
+                    const author = avatar.getAttribute('data-author');
+                    if (author) {
+                        avatar.textContent = author.charAt(0).toUpperCase();
+                    }
+                });
+            }
+
+            // Call after initial load and after each fetch
+            initializeAuthorAvatars();
+
+            // Add observer to handle new comments added to the DOM
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        initializeAuthorAvatars();
+                    }
+                });
+            });
+
+            observer.observe(commentsList, { childList: true, subtree: true });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect x="0" y="0" width="200" height="200" fill="#1a0d21"/>
+    
+    <!-- Arena Shape -->
+    <path d="M40 140v-80c0-20 30-40 60-40s60 20 60 40v80c0 20-30 40-60 40s-60-20-60-40z" 
+          fill="#2d1b36" stroke="#a855f7" stroke-width="4"/>
+    
+    <!-- Stage -->
+    <rect x="50" y="120" width="100" height="20" fill="#a855f7" opacity="0.3"/>
+    
+    <!-- Seats -->
+    <path d="M45 60c20-15 45-25 55-25s35 10 55 25M45 90c20-15 45-25 55-25s35 10 55 25M45 120c20-15 45-25 55-25s35 10 55 25" 
+          stroke="#a855f7" stroke-width="2" fill="none" opacity="0.5"/>
+    
+    <!-- Spotlights -->
+    <circle cx="60" cy="40" r="5" fill="#a855f7" opacity="0.8"/>
+    <circle cx="140" cy="40" r="5" fill="#a855f7" opacity="0.8"/>
+    
+    <!-- Light Beams -->
+    <path d="M60 40l20 40M140 40l-20 40" stroke="#a855f7" stroke-width="2" opacity="0.3"/>
+    
+    <!-- Glow Effect -->
+    <rect x="0" y="0" width="200" height="200" fill="url(#venueGlow)" opacity="0.2"/>
+    
+    <!-- Gradient Definition -->
+    <defs>
+        <radialGradient id="venueGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#1a0d21;stop-opacity:0"/>
+        </radialGradient>
+    </defs>
+</svg> 
