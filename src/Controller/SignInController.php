@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -37,6 +38,7 @@ class SignInController extends AbstractController
     {
         $email = $request->request->get('email');
         $password = $request->request->get('password');
+        $rememberMe = $request->request->get('remember_me') === 'on';
 
         if (!$email || !$password) {
             return new JsonResponse([
@@ -68,34 +70,85 @@ class SignInController extends AbstractController
             ]);
         }
 
-        // Stocker l'utilisateur en session
-        $session = $this->requestStack->getSession();
-        $session->set('user', [
+        // Créer les données de session
+        $userData = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'nom' => $user->getNom(),
             'prenom' => $user->getPrenom(),
             'role' => $user->getRole(),
             'photo' => $user->getPhoto()
-        ]);
+        ];
 
-        return new JsonResponse([
+        // Stocker l'utilisateur en session
+        $session = $this->requestStack->getSession();
+        $session->set('user', $userData);
+
+        // Créer la réponse
+        $response = new JsonResponse([
             'success' => true,
             'redirect' => $user->getRole() === 'admin' ? 
                 $this->generateUrl('app_dashboard_admin') : 
                 $this->generateUrl('app_home')
         ]);
+
+        // Si "Remember me" est coché, créer un cookie sécurisé
+        if ($rememberMe) {
+            try {
+                // Générer un token unique pour le cookie
+                $token = bin2hex(random_bytes(32));
+                
+                // Stocker le token en base de données
+                $user->setRememberMeToken($token);
+                $entityManager->flush();
+
+                // Créer un cookie sécurisé qui expire dans 30 jours
+                $cookie = Cookie::create('remember_me')
+                    ->withValue($token)
+                    ->withExpires(strtotime('+30 days'))
+                    ->withPath('/')
+                    ->withSecure(true)
+                    ->withHttpOnly(true)
+                    ->withSameSite('lax');
+
+                $response->headers->setCookie($cookie);
+            } catch (\Exception $e) {
+                // Si une erreur survient avec le remember me, on continue quand même
+                // mais on log l'erreur
+                error_log('Erreur remember me: ' . $e->getMessage());
+            }
+        }
+
+        return $response;
     }
 
     #[Route('/logout', name: 'app_logout')]
-    public function logout(): Response
+    public function logout(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Supprimer l'utilisateur de la session
+        // Récupérer l'utilisateur actuel
         $session = $this->requestStack->getSession();
+        $userData = $session->get('user');
+
+        if ($userData) {
+            // Supprimer le token remember_me de l'utilisateur en base de données
+            $user = $entityManager->getRepository(Utilisateur::class)->find($userData['id']);
+            if ($user) {
+                $user->setRememberMeToken(null);
+                $entityManager->flush();
+            }
+        }
+
+        // Supprimer l'utilisateur de la session
         $session->remove('user');
         
+        // Créer la réponse
+        $response = $this->redirectToRoute('app_home');
+        
+        // Supprimer le cookie remember_me
+        $response->headers->clearCookie('remember_me');
+        
         $this->addFlash('success', 'Déconnexion réussie !');
-        return $this->redirectToRoute('app_home');
+        return $response;
     }
 
     #[Route('/register', name: 'app_register', methods: ['POST'])]

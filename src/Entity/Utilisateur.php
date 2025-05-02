@@ -55,6 +55,9 @@ class Utilisateur implements PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $rememberMeToken = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -174,6 +177,17 @@ class Utilisateur implements PasswordAuthenticatedUserInterface
     public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): self
     {
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    public function getRememberMeToken(): ?string
+    {
+        return $this->rememberMeToken;
+    }
+
+    public function setRememberMeToken(?string $rememberMeToken): self
+    {
+        $this->rememberMeToken = $rememberMeToken;
         return $this;
     }
 }
