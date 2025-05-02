@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20250430182539 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return '';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql(<<<'SQL'
+            ALTER TABLE reponse CHANGE reclamation_id reclamation_id INT DEFAULT NULL
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE reponse ADD CONSTRAINT FK_5FB6DEC72D6BA2D9 FOREIGN KEY (reclamation_id) REFERENCES reclamation (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP INDEX idx_reponse_reclamation ON reponse
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_5FB6DEC72D6BA2D9 ON reponse (reclamation_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE utilisateur CHANGE is_blocked is_blocked TINYINT(1) NOT NULL
+        SQL);
+    }
+
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql(<<<'SQL'
+            ALTER TABLE reponse DROP FOREIGN KEY FK_5FB6DEC72D6BA2D9
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE reponse DROP FOREIGN KEY FK_5FB6DEC72D6BA2D9
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE reponse CHANGE reclamation_id reclamation_id INT NOT NULL
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP INDEX idx_5fb6dec72d6ba2d9 ON reponse
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_reponse_reclamation ON reponse (reclamation_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE reponse ADD CONSTRAINT FK_5FB6DEC72D6BA2D9 FOREIGN KEY (reclamation_id) REFERENCES reclamation (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE utilisateur CHANGE is_blocked is_blocked TINYINT(1) DEFAULT 0 NOT NULL
+        SQL);
+    }
+}

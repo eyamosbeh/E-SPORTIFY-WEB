@@ -1,0 +1,358 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réinitialisation du mot de passe{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+<div class="reset-password-container">
+    <div class="reset-password-card">
+        <div class="card-header">
+            <i class="fas fa-lock-open header-icon"></i>
+            <h1>Réinitialisation du mot de passe</h1>
+        </div>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <form method="post" id="resetPasswordForm">
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-icon">
+                        <i class="fas fa-key"></i>
+                    </span>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="form-control" 
+                           required 
+                           minlength="6"
+                           placeholder="Nouveau mot de passe">
+                    <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="password-strength-meter">
+                    <div class="meter-bar"></div>
+                </div>
+                <div class="password-strength-text"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-icon">
+                        <i class="fas fa-key"></i>
+                    </span>
+                    <input type="password" 
+                           id="confirm_password" 
+                           name="confirm_password" 
+                           class="form-control" 
+                           required 
+                           minlength="6"
+                           placeholder="Confirmer le mot de passe">
+                    <button type="button" class="toggle-password" onclick="togglePassword('confirm_password')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-save"></i>
+                Réinitialiser le mot de passe
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .reset-password-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 20px;
+    }
+
+    .reset-password-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 500px;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .card-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .header-icon {
+        font-size: 3em;
+        color: #5995fd;
+        margin-bottom: 20px;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-20px);
+        }
+        60% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .card-header h1 {
+        color: #333;
+        font-size: 1.8em;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        color: #5995fd;
+        font-size: 1.2em;
+        transition: all 0.3s ease;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 15px 45px;
+        border: 2px solid #e1e1e1;
+        border-radius: 10px;
+        font-size: 1em;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #5995fd;
+        box-shadow: 0 0 0 3px rgba(89, 149, 253, 0.1);
+        outline: none;
+    }
+
+    .form-control:focus + .input-icon {
+        color: #5995fd;
+        transform: scale(1.1);
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        padding: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .toggle-password:hover {
+        color: #5995fd;
+    }
+
+    .password-strength-meter {
+        height: 4px;
+        background: #f3f3f3;
+        margin-top: 10px;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .meter-bar {
+        height: 100%;
+        width: 0;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .strength-weak { background: #ff4444; width: 25% !important; }
+    .strength-medium { background: #ffd700; width: 50% !important; }
+    .strength-good { background: #00C851; width: 75% !important; }
+    .strength-strong { background: #007E33; width: 100% !important; }
+
+    .password-strength-text {
+        font-size: 0.8em;
+        margin-top: 5px;
+        color: #666;
+        text-align: right;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: #5995fd;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .submit-btn:hover {
+        background: #4d84e2;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(89, 149, 253, 0.3);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .alert-danger {
+        background-color: #ffe5e5;
+        color: #dc3545;
+        border: 1px solid #ffcccc;
+    }
+
+    .alert-success {
+        background-color: #e8f5e9;
+        color: #28a745;
+        border: 1px solid #c8e6c9;
+    }
+
+    @media (max-width: 576px) {
+        .reset-password-card {
+            padding: 20px;
+        }
+
+        .card-header h1 {
+            font-size: 1.5em;
+        }
+
+        .header-icon {
+            font-size: 2.5em;
+        }
+    }
+</style>
+
+<script>
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    const icon = button.querySelector('i');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+
+    // Animation de l'icône
+    icon.style.transform = 'scale(1.2)';
+    setTimeout(() => {
+        icon.style.transform = 'scale(1)';
+    }, 200);
+}
+
+function checkPasswordStrength(password) {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.match(/[a-z]+/)) strength++;
+    if (password.match(/[A-Z]+/)) strength++;
+    if (password.match(/[0-9]+/)) strength++;
+    if (password.match(/[^A-Za-z0-9]+/)) strength++;
+    return strength;
+}
+
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const meter = document.querySelector('.meter-bar');
+    const text = document.querySelector('.password-strength-text');
+
+    meter.className = 'meter-bar';
+    if (password === '') {
+        text.textContent = '';
+        return;
+    }
+
+    const strength = checkPasswordStrength(password);
+    if (strength < 2) {
+        meter.className = 'meter-bar strength-weak';
+        text.textContent = 'Faible';
+        text.style.color = '#ff4444';
+    } else if (strength < 3) {
+        meter.className = 'meter-bar strength-medium';
+        text.textContent = 'Moyen';
+        text.style.color = '#ffd700';
+    } else if (strength < 4) {
+        meter.className = 'meter-bar strength-good';
+        text.textContent = 'Bon';
+        text.style.color = '#00C851';
+    } else {
+        meter.className = 'meter-bar strength-strong';
+        text.textContent = 'Fort';
+        text.style.color = '#007E33';
+    }
+});
+
+document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Les mots de passe ne correspondent pas.');
+    }
+});
+</script>
+{% endblock %} 

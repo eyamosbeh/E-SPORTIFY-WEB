@@ -8,11 +8,12 @@
     <!-- CSS de la navbar -->
     <link rel="stylesheet" href="{{ asset('navbar/css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('navbar/scss/main.scss') }}">
-    <!-- Font Awesome pour le formulaire de connexion -->
-    <script
-      src="https://kit.fontawesome.com/64d58efce2.js"
-      crossorigin="anonymous"
-    ></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Face API -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/dist/face-api.js"></script>
+    <!-- Google reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <!-- CSS du formulaire de connexion -->
     <link rel="stylesheet" href="{{ asset('sign_in/style.css') }}" />
     <style>
@@ -102,6 +103,524 @@
         position: relative;
         margin-bottom: 30px;
       }
+
+      .webcam-container {
+        position: relative;
+        width: 100%;
+        max-width: 380px;
+        margin: 0;
+        height: 285px;
+        overflow: hidden;
+        border-radius: 10px;
+        background-color: #f5f5f5;
+      }
+
+      #webcam {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .capture-btn {
+        background-color: #5995fd;
+        border: none;
+        outline: none;
+        height: 49px;
+        border-radius: 49px;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin: 5px 0;
+        cursor: pointer;
+        transition: 0.5s;
+        width: 150px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .capture-btn:hover {
+        background-color: #4d84e2;
+      }
+
+      .face-login-btn {
+        background-color: #5995fd;
+        border: none;
+        outline: none;
+        height: 49px;
+        border-radius: 49px;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin: 10px 0;
+        cursor: pointer;
+        transition: 0.5s;
+        width: 200px;
+      }
+
+      .sign-up-form {
+        opacity: 0;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 20px; /* Ajouter du padding en bas */
+        max-height: 100vh;
+        overflow-y: auto; /* Permettre le défilement si nécessaire */
+      }
+
+      .container.sign-up-mode .sign-up-form {
+        opacity: 1;
+        z-index: 2;
+      }
+
+      /* Ajuster l'espacement des éléments du formulaire */
+      .sign-up-form .input-field,
+      .sign-up-form .webcam-container,
+      .sign-up-form .capture-btn,
+      .sign-up-form .btn {
+        margin-bottom: 10px;
+      }
+
+      /* Ajuster la hauteur du conteneur principal */
+      .container {
+        min-height: 800px;
+      }
+
+      .forms-container {
+        min-height: 800px;
+      }
+
+      .name-container {
+        display: flex;
+        gap: 10px;
+        width: 380px;
+        margin: 0 auto;
+        margin-bottom: 10px;
+      }
+      
+      .name-container .input-field {
+        width: 50%;
+        margin: 0;
+      }
+
+      .input-field {
+        position: relative;
+        margin-bottom: 25px;
+      }
+
+      .webcam-container {
+        position: relative;
+        width: 100%;
+        max-width: 380px;
+        margin: 0;
+        height: 285px;
+        overflow: hidden;
+        border-radius: 10px;
+        background-color: #f5f5f5;
+      }
+
+      #webcam {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .capture-btn {
+        background-color: #5995fd;
+        border: none;
+        outline: none;
+        height: 49px;
+        border-radius: 49px;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin: 5px 0;
+        cursor: pointer;
+        transition: 0.5s;
+        width: 150px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .capture-btn:hover {
+        background-color: #4d84e2;
+      }
+
+      .btn {
+        width: 200px;
+        margin: 10px 0;
+      }
+
+      .error-message {
+        color: #f44336;
+        font-size: 0.85rem;
+        margin-top: 5px;
+        padding-left: 35px;
+        display: none;
+        text-align: left;
+        width: 100%;
+        line-height: 1.2;
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      /* Style pour le conteneur principal */
+      .container {
+        min-height: 800px;
+        padding: 20px;
+      }
+
+      .forms-container {
+        min-height: 800px;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Style pour les champs en focus */
+      .input-field input:focus,
+      .input-field select:focus {
+        border-bottom: 2px solid #5995fd;
+      }
+
+      .input-field input:focus + i,
+      .input-field select:focus + i {
+        color: #5995fd;
+      }
+
+      /* Style pour le select */
+      .input-field select {
+        cursor: pointer;
+        background-color: transparent;
+      }
+
+      .input-field select option {
+        color: #333;
+        background-color: #fff;
+        padding: 10px;
+      }
+
+      /* Ajout d'une bordure bottom subtile */
+      .input-field::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background-color: #ddd;
+      }
+
+      /* Animation de hover sur les boutons */
+      .capture-btn:hover,
+      .btn:hover {
+        background-color: #4d84e2;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(89, 149, 253, 0.3);
+      }
+
+      /* Responsive design */
+      @media (max-width: 570px) {
+        .name-container {
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .name-container .input-field {
+          width: 100%;
+        }
+        
+        .webcam-container {
+          height: 240px;
+        }
+      }
+
+      /* Styles pour la barre de force du mot de passe */
+      .password-strength-meter {
+        height: 6px;
+        background: #f3f3f3;
+        margin: 12px 0 8px 0;
+        width: 100%;
+        border-radius: 10px;
+        position: relative;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      .password-strength-meter div {
+        height: 100%;
+        width: 0%;
+        transition: all 0.4s ease-in-out;
+        border-radius: 10px;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .strength-weak {
+        background: linear-gradient(90deg, #ff4d4d, #ff6666);
+        width: 25% !important;
+        animation: pulse-red 1.5s infinite;
+      }
+
+      .strength-medium {
+        background: linear-gradient(90deg, #ffd700, #ffed4a);
+        width: 50% !important;
+        animation: pulse-yellow 1.5s infinite;
+      }
+
+      .strength-good {
+        background: linear-gradient(90deg, #90EE90, #98FB98);
+        width: 75% !important;
+        animation: pulse-light-green 1.5s infinite;
+      }
+
+      .strength-strong {
+        background: linear-gradient(90deg, #32CD32, #00FF00);
+        width: 100% !important;
+        animation: pulse-green 1.5s infinite;
+      }
+
+      @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(255, 77, 77, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+      }
+
+      @keyframes pulse-yellow {
+        0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(255, 215, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+      }
+
+      @keyframes pulse-light-green {
+        0% { box-shadow: 0 0 0 0 rgba(144, 238, 144, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(144, 238, 144, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(144, 238, 144, 0); }
+      }
+
+      @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(50, 205, 50, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(50, 205, 50, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(50, 205, 50, 0); }
+      }
+
+      .password-strength-text {
+        font-size: 0.85rem;
+        margin-top: 8px;
+        color: #666;
+        text-align: right;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 5px;
+      }
+
+      .password-strength-text::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      .password-strength-text:empty::before {
+        display: none;
+      }
+
+      .strength-weak + .password-strength-text::before {
+        background: #ff4d4d;
+        box-shadow: 0 0 8px rgba(255, 77, 77, 0.5);
+      }
+
+      .strength-medium + .password-strength-text::before {
+        background: #ffd700;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+      }
+
+      .strength-good + .password-strength-text::before {
+        background: #90EE90;
+        box-shadow: 0 0 8px rgba(144, 238, 144, 0.5);
+      }
+
+      .strength-strong + .password-strength-text::before {
+        background: #32CD32;
+        box-shadow: 0 0 8px rgba(50, 205, 50, 0.5);
+      }
+
+      /* Ajout d'une info-bulle pour les critères */
+      .password-criteria {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 5px;
+        padding-left: 35px;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+      }
+
+      .input-field input[type="password"]:focus ~ .password-criteria {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Style pour le bouton de prévisualisation du mot de passe */
+      .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        color: #999;
+        transition: all 0.3s ease;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+      }
+
+      .password-toggle:hover {
+        color: #5995fd;
+      }
+
+      .password-toggle:focus {
+        outline: none;
+      }
+
+      .password-toggle i {
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+
+      /* Ajuster le padding de l'input password pour éviter le chevauchement avec l'icône */
+      .input-field input[type="password"] {
+        padding-right: 40px !important;
+      }
+
+      /* S'assurer que l'icône est au-dessus de l'input */
+      .input-field {
+        position: relative;
+      }
+
+      .input-field i.fas.fa-lock {
+        z-index: 1;
+      }
+
+      .password-toggle {
+        z-index: 2;
+      }
+
+      /* Style pour le reCAPTCHA */
+      .recaptcha-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+      }
+
+      /* Styles pour la popup webcam */
+      .webcam-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .webcam-popup-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        position: relative;
+        width: 90%;
+        max-width: 500px;
+      }
+
+      .webcam-container {
+        width: 100%;
+        height: 375px;
+        overflow: hidden;
+        border-radius: 10px;
+        background-color: #f5f5f5;
+        margin-bottom: 15px;
+      }
+
+      .close-popup {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+      }
+
+      .close-popup:hover {
+        color: #000;
+      }
+
+      .popup-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .popup-capture-btn {
+        background-color: #5995fd;
+        border: none;
+        outline: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.5s;
+      }
+
+      .popup-capture-btn:hover {
+        background-color: #4d84e2;
+      }
     </style>
     <title>Sign in & Sign up Form</title>
   </head>
@@ -121,7 +640,7 @@
 
     <div class="container">
       <div class="forms-container">
-        <div class="signin-signup">
+        <div class="signin-signup" style="padding-top: 115px;">
           <form action="{{ path('app_login') }}" method="POST" class="sign-in-form" id="loginForm">
             <h2 class="title">Sign in</h2>
             <div class="input-field">
@@ -131,25 +650,46 @@
             </div>
             <div class="input-field">
               <i class="fas fa-lock"></i>
-              <input type="password" name="password" placeholder="Password" />
+              <input type="password" name="password" id="loginPassword" placeholder="Password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">
+                <i class="fas fa-eye"></i>
+              </button>
               <div class="error-message" data-error="password"></div>
             </div>
             <div class="error-message" data-error="general"></div>
             <input type="submit" value="Login" class="btn solid" />
+            
+            <!-- Lien Mot de passe oublié -->
+            <p style="margin-top: 15px;">
+              <a href="#" id="forgotPasswordLink" style="color: #5995fd; text-decoration: none;">Mot de passe oublié ?</a>
+            </p>
+
+            <!-- Popup de réinitialisation de mot de passe -->
+            <div id="forgotPasswordPopup" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+              <div class="modal-content" style="background-color: #fff; margin: 15% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; position: relative;">
+                <span class="close" style="position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; color: #666;">&times;</span>
+                <h3 style="margin-bottom: 20px; color: #333;">Réinitialisation du mot de passe</h3>
+                <p style="color: #666; margin-bottom: 15px;">Entrez votre adresse email pour recevoir un lien de réinitialisation.</p>
+                <div class="input-field" style="margin-bottom: 20px;">
+                  <i class="fas fa-envelope"></i>
+                  <input type="email" id="resetEmail" placeholder="Votre email" style="width: 100%;" />
+                </div>
+                <button id="sendResetLink" class="btn solid" style="width: 100%;">Envoyer le lien</button>
+                <div id="resetMessage" style="margin-top: 15px; text-align: center;"></div>
+              </div>
+            </div>
+            
+            <!-- Bouton de login par reconnaissance faciale -->
+            <button type="button" class="face-login-btn" id="faceLoginBtn">
+              <i class="fas fa-camera"></i> Login with Face
+            </button>
+
             <p class="social-text">Or Sign in with social platforms</p>
             <div class="social-media">
               <a href="#" class="social-icon">
-                <i class="fab fa-facebook-f"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-twitter"></i>
-              </a>
-              <a href="#" class="social-icon">
                 <i class="fab fa-google"></i>
               </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-linkedin-in"></i>
-              </a>
+            
             </div>
           </form>
           <form action="{{ path('app_register') }}" method="POST" class="sign-up-form" id="registerForm">
@@ -173,12 +713,22 @@
             </div>
             <div class="input-field">
               <i class="fas fa-lock"></i>
-              <input type="password" name="password" placeholder="Password" />
+              <input type="password" name="password" id="password" placeholder="Password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <div class="password-strength-meter">
+                <div></div>
+              </div>
+              <div class="password-strength-text"></div>
               <div class="error-message" data-error="password"></div>
             </div>
             <div class="input-field">
               <i class="fas fa-lock"></i>
-              <input type="password" name="confirm_password" placeholder="Confirm Password" />
+              <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">
+                <i class="fas fa-eye"></i>
+              </button>
               <div class="error-message" data-error="confirmPassword"></div>
             </div>
             <div class="input-field">
@@ -188,11 +738,32 @@
                 <option value="joueur">Joueur</option>
                 <option value="organisateur">Organisateur</option>
                 <option value="vendeur">Vendeur</option>
-                <option value="admin">Administrateur</option>
               </select>
               <div class="error-message" data-error="role"></div>
             </div>
+
+            <!-- reCAPTCHA container -->
+            <div class="recaptcha-container">
+              <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+              <div class="error-message" data-error="recaptcha"></div>
+            </div>
+
             <div class="error-message" data-error="general"></div>
+
+            <p style="color: #666; font-size: 0.9rem; margin: 10px 0;">
+              <i class="fas fa-info-circle"></i> La reconnaissance faciale est optionnelle.
+            </p>
+
+            <!-- Container pour la webcam -->
+            <div class="webcam-container" style="display: none;">
+              <video id="webcam" autoplay muted playsinline></video>
+              <canvas id="canvas"></canvas>
+            </div>
+            <button type="button" class="capture-btn" id="captureBtn">
+              <i class="fas fa-camera"></i> Activer la reconnaissance faciale
+            </button>
+            <input type="hidden" name="faceImage" id="faceImage" />
+            
             <input type="submit" class="btn" value="Sign up" />
           </form>
         </div>
@@ -226,25 +797,182 @@
       </div>
     </div>
 
+    <!-- Popup Webcam -->
+    <div class="webcam-popup" id="webcamPopup">
+      <div class="webcam-popup-content">
+        <button class="close-popup" onclick="closeWebcamPopup()">&times;</button>
+        <h3 style="text-align: center; margin-bottom: 15px;">Reconnaissance Faciale</h3>
+        <div class="webcam-container">
+          <video id="popupWebcam" autoplay muted playsinline></video>
+          <canvas id="popupCanvas"></canvas>
+        </div>
+        <div class="popup-buttons">
+          <button type="button" class="popup-capture-btn" id="captureInPopupBtn">
+            <i class="fas fa-camera"></i> Capturer
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="{{ asset('sign_in/app.js') }}"></script>
     <script src="{{ asset('navbar/js/main.js') }}" defer></script>
     <script>
-      // Auto-hide flash messages after 5 seconds
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-          const flashMessages = document.querySelectorAll('.flash-message');
-          flashMessages.forEach(function(message) {
-            message.style.opacity = '0';
-            setTimeout(function() {
-              message.remove();
-            }, 500);
-          });
-        }, 5000);
-      });
+      let stream = null;
+      let faceApiInitialized = false;
 
-      document.addEventListener('DOMContentLoaded', function() {
+      // Fonction pour initialiser Face-API.js
+      async function initializeFaceApi() {
+        if (faceApiInitialized) return;
+        
+        try {
+          console.log('Loading Face-API models...');
+          await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+          await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+          await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+          console.log('Face-API models loaded successfully');
+          faceApiInitialized = true;
+        } catch (error) {
+          console.error('Error loading Face-API models:', error);
+          alert('Erreur lors du chargement des modèles de reconnaissance faciale');
+        }
+      }
+
+      // Fonction pour arrêter la webcam
+      function stopWebcam() {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+      }
+
+      // Fonction pour démarrer la webcam
+      async function startWebcam() {
+        try {
+          console.log('Starting webcam...');
+          const video = document.getElementById('popupWebcam');
+          if (!video) {
+            console.error('Video element not found');
+            return;
+          }
+
+          // Arrêter la webcam si elle est déjà en cours
+          stopWebcam();
+
+          // Démarrer la nouvelle instance
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+          
+          video.srcObject = stream;
+          console.log('Stream set to video element');
+          
+          // Attendre que la vidéo soit prête à jouer
+          await video.play().catch(e => {
+            console.error('Error playing video:', e);
+          });
+          
+          console.log('Webcam started successfully');
+        } catch (error) {
+          console.error('Error starting webcam:', error);
+          alert('Erreur lors de l\'accès à la webcam. Veuillez vérifier les permissions.');
+        }
+      }
+
+      // Fonction pour ouvrir la popup webcam
+      function openWebcamPopup() {
+        const webcamPopup = document.getElementById('webcamPopup');
+        webcamPopup.style.display = 'flex';
+        startWebcam().catch(error => {
+          console.error('Error in openWebcamPopup:', error);
+          alert('Erreur lors de l\'ouverture de la webcam');
+        });
+      }
+
+      // Fonction pour fermer la popup webcam
+      function closeWebcamPopup() {
+        const webcamPopup = document.getElementById('webcamPopup');
+        webcamPopup.style.display = 'none';
+        stopWebcam();
+      }
+
+      document.addEventListener('DOMContentLoaded', async function() {
         const registerForm = document.getElementById('registerForm');
         const loginForm = document.getElementById('loginForm');
+        const signUpBtn = document.getElementById('sign-up-btn');
+        const signInBtn = document.getElementById('sign-in-btn');
+        const webcamPopup = document.getElementById('webcamPopup');
+
+        // Initialiser Face-API.js au chargement
+        await initializeFaceApi();
+
+        // Supprimer l'ouverture automatique de la webcam lors du passage au formulaire d'inscription
+        signUpBtn.addEventListener('click', () => {
+          console.log('Sign up button clicked');
+        });
+
+        // Arrêter la webcam quand on revient au formulaire de connexion
+        signInBtn.addEventListener('click', () => {
+          console.log('Sign in button clicked');
+          stopWebcam();
+        });
+
+        // Gestionnaire pour le bouton d'activation de la reconnaissance faciale
+        document.getElementById('captureBtn').addEventListener('click', () => {
+          openWebcamPopup();
+        });
+
+        // Capture dans la popup
+        document.getElementById('captureInPopupBtn').addEventListener('click', async () => {
+          if (!faceApiInitialized) {
+            console.log('Face-API not initialized, initializing...');
+            await initializeFaceApi();
+          }
+
+          const video = document.getElementById('popupWebcam');
+          const canvas = document.getElementById('popupCanvas');
+          
+          try {
+            // Détecter le visage
+            console.log('Detecting face...');
+            const detections = await faceapi.detectSingleFace(video)
+              .withFaceLandmarks()
+              .withFaceDescriptor();
+            
+            if (detections) {
+              console.log('Face detected:', detections);
+              const faceDescriptor = Array.from(detections.descriptor);
+              document.getElementById('faceImage').value = JSON.stringify(faceDescriptor);
+              
+              // Mettre à jour le bouton et fermer la popup
+              const captureBtn = document.getElementById('captureBtn');
+              captureBtn.innerHTML = '<i class="fas fa-check"></i> Reconnaissance faciale activée';
+              captureBtn.style.backgroundColor = '#4CAF50';
+              
+              closeWebcamPopup();
+              alert('Photo capturée avec succès !');
+            } else {
+              alert('Aucun visage détecté ! Veuillez réessayer.');
+            }
+          } catch (error) {
+            console.error('Error during capture:', error);
+            alert('Erreur lors de la capture. Veuillez réessayer.');
+          }
+        });
+
+        // Fermer la popup si on clique en dehors
+        document.getElementById('webcamPopup').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('webcamPopup')) {
+            closeWebcamPopup();
+          }
+        });
+
+        // Ajouter gestionnaire pour la touche Echap
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && document.getElementById('webcamPopup').style.display === 'flex') {
+            closeWebcamPopup();
+          }
+        });
 
         // Fonction pour réinitialiser les messages d'erreur
         function resetErrors(form) {
@@ -321,6 +1049,272 @@
           .catch(error => {
             console.error('Error:', error);
             showErrors(this, {'general': 'Une erreur est survenue'});
+          });
+        });
+
+        // Fonction pour vérifier la force du mot de passe
+        function checkPasswordStrength(password) {
+          let strength = 0;
+          
+          // Longueur minimale
+          if (password.length >= 8) strength += 1;
+          
+          // Contient des lettres minuscules
+          if (/[a-z]/.test(password)) strength += 1;
+          
+          // Contient des lettres majuscules
+          if (/[A-Z]/.test(password)) strength += 1;
+          
+          // Contient des chiffres
+          if (/[0-9]/.test(password)) strength += 1;
+          
+          // Contient des caractères spéciaux
+          if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+          return strength;
+        }
+
+        // Fonction pour mettre à jour l'indicateur de force
+        function updatePasswordStrength(password) {
+          const strength = checkPasswordStrength(password);
+          const meter = document.querySelector('.password-strength-meter div');
+          const text = document.querySelector('.password-strength-text');
+
+          // Réinitialiser les classes
+          meter.className = '';
+
+          // Mettre à jour l'indicateur selon la force
+          if (password === '') {
+            meter.className = '';
+            text.textContent = '';
+          } else if (strength < 2) {
+            meter.className = 'strength-weak';
+            text.textContent = 'Faible';
+            text.style.color = '#ff4d4d';
+          } else if (strength < 3) {
+            meter.className = 'strength-medium';
+            text.textContent = 'Moyen';
+            text.style.color = '#ffd700';
+          } else if (strength < 4) {
+            meter.className = 'strength-good';
+            text.textContent = 'Bon';
+            text.style.color = '#90EE90';
+          } else {
+            meter.className = 'strength-strong';
+            text.textContent = 'Fort';
+            text.style.color = '#00ff00';
+          }
+        }
+
+        // Écouter les changements dans le champ mot de passe
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+          passwordInput.addEventListener('input', function() {
+            updatePasswordStrength(this.value);
+          });
+        }
+      });
+
+      // Login par reconnaissance faciale
+      document.getElementById('faceLoginBtn').addEventListener('click', async () => {
+        // Démarrer la webcam
+        await startWebcam();
+        
+        // Afficher un bouton de capture temporaire pour le login
+        const loginForm = document.querySelector('.sign-in-form');
+        let captureFaceLoginBtn = document.querySelector('#captureFaceLoginBtn');
+        
+        if (!captureFaceLoginBtn) {
+          // Créer le conteneur de la webcam s'il n'existe pas
+          let loginWebcamContainer = document.querySelector('#loginWebcamContainer');
+          if (!loginWebcamContainer) {
+            loginWebcamContainer = document.createElement('div');
+            loginWebcamContainer.id = 'loginWebcamContainer';
+            loginWebcamContainer.className = 'webcam-container';
+            loginWebcamContainer.style.display = 'none';
+            loginWebcamContainer.innerHTML = `
+              <video id="loginWebcam" autoplay muted playsinline></video>
+              <canvas id="loginCanvas"></canvas>
+            `;
+            loginForm.insertBefore(loginWebcamContainer, document.getElementById('faceLoginBtn'));
+          }
+          
+          // Créer le bouton de capture s'il n'existe pas
+          captureFaceLoginBtn = document.createElement('button');
+          captureFaceLoginBtn.id = 'captureFaceLoginBtn';
+          captureFaceLoginBtn.className = 'capture-btn';
+          captureFaceLoginBtn.type = 'button';
+          captureFaceLoginBtn.innerHTML = '<i class="fas fa-camera"></i> Capture pour Login';
+          captureFaceLoginBtn.style.display = 'none';
+          loginForm.insertBefore(captureFaceLoginBtn, document.getElementById('faceLoginBtn'));
+        }
+        
+        // Afficher la webcam et le bouton de capture
+        document.getElementById('loginWebcamContainer').style.display = 'block';
+        captureFaceLoginBtn.style.display = 'block';
+        document.getElementById('faceLoginBtn').style.display = 'none';
+        
+        // Rediriger le flux vidéo vers la nouvelle vidéo
+        const loginVideo = document.getElementById('loginWebcam');
+        if (stream) {
+          loginVideo.srcObject = stream;
+        }
+        
+        // Gestionnaire d'événements pour la capture
+        captureFaceLoginBtn.onclick = async () => {
+          if (!faceApiInitialized) {
+            console.log('Face-API not initialized, initializing...');
+            await initializeFaceApi();
+          }
+          
+          try {
+            const loginVideo = document.getElementById('loginWebcam');
+            const loginCanvas = document.getElementById('loginCanvas');
+            
+            if (!loginVideo || !loginCanvas) {
+              console.error('Login video or canvas element not found');
+              return;
+            }
+            
+            // Attendre que la vidéo soit prête
+            if (loginVideo.readyState !== loginVideo.HAVE_ENOUGH_DATA) {
+              console.log('Waiting for video...');
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // Configurer le canvas
+            loginCanvas.width = loginVideo.videoWidth;
+            loginCanvas.height = loginVideo.videoHeight;
+            
+            // Détecter le visage
+            console.log('Detecting face for login...');
+            const detection = await faceapi.detectSingleFace(loginVideo)
+              .withFaceLandmarks()
+              .withFaceDescriptor();
+            
+            if (detection) {
+              console.log('Face detected for login:', detection);
+              
+              // Envoyer le descripteur facial au serveur pour authentification
+              const response = await fetch('{{ path('app_face_login') }}', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  faceDescriptor: Array.from(detection.descriptor)
+                })
+              });
+              
+              const data = await response.json();
+              if (data.success) {
+                window.location.href = data.redirect;
+              } else {
+                alert('Visage non reconnu ou erreur survenue');
+              }
+            } else {
+              console.log('No face detected');
+              alert('Aucun visage détecté ! Veuillez réessayer.');
+            }
+          } catch (error) {
+            console.error('Error during login capture:', error);
+            alert('Erreur lors de la capture. Veuillez réessayer.');
+          }
+        };
+      });
+
+      function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fas fa-eye-slash';
+          button.title = 'Masquer le mot de passe';
+        } else {
+          input.type = 'password';
+          icon.className = 'fas fa-eye';
+          button.title = 'Afficher le mot de passe';
+        }
+
+        // Ajouter une animation subtile à l'icône
+        icon.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+          icon.style.transform = 'scale(1)';
+        }, 200);
+      }
+
+      // Gestion de la popup de réinitialisation de mot de passe
+      document.addEventListener('DOMContentLoaded', function() {
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const popup = document.getElementById('forgotPasswordPopup');
+        const closeBtn = popup.querySelector('.close');
+        const sendResetLink = document.getElementById('sendResetLink');
+        const resetMessage = document.getElementById('resetMessage');
+
+        // Ouvrir la popup
+        forgotPasswordLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          popup.style.display = 'block';
+        });
+
+        // Fermer la popup
+        closeBtn.addEventListener('click', function() {
+          popup.style.display = 'none';
+          resetMessage.textContent = '';
+          document.getElementById('resetEmail').value = '';
+        });
+
+        // Fermer la popup en cliquant en dehors
+        window.addEventListener('click', function(e) {
+          if (e.target === popup) {
+            popup.style.display = 'none';
+            resetMessage.textContent = '';
+            document.getElementById('resetEmail').value = '';
+          }
+        });
+
+        // Envoyer la demande de réinitialisation
+        sendResetLink.addEventListener('click', function() {
+          const email = document.getElementById('resetEmail').value;
+          if (!email) {
+            resetMessage.textContent = 'Veuillez entrer votre email';
+            resetMessage.style.color = '#ff4444';
+            return;
+          }
+
+          sendResetLink.disabled = true;
+          sendResetLink.textContent = 'Envoi en cours...';
+
+          fetch('{{ path('app_forgot_password_request') }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              resetMessage.textContent = data.message;
+              resetMessage.style.color = '#4CAF50';
+              setTimeout(() => {
+                popup.style.display = 'none';
+                resetMessage.textContent = '';
+                document.getElementById('resetEmail').value = '';
+              }, 3000);
+            } else {
+              resetMessage.textContent = data.error;
+              resetMessage.style.color = '#ff4444';
+            }
+          })
+          .catch(error => {
+            resetMessage.textContent = 'Une erreur est survenue';
+            resetMessage.style.color = '#ff4444';
+          })
+          .finally(() => {
+            sendResetLink.disabled = false;
+            sendResetLink.textContent = 'Envoyer le lien';
           });
         });
       });

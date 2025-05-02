@@ -28,6 +28,7 @@ class SignInController extends AbstractController
     {
         return $this->render('sign_in/SignIn.html.twig', [
             'controller_name' => 'SignInController',
+            'recaptcha_site_key' => $this->getParameter('app.recaptcha_site_key')
         ]);
     }
 
@@ -103,6 +104,34 @@ class SignInController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): Response {
+        // Vérifier le reCAPTCHA
+        $recaptchaResponse = $request->request->get('g-recaptcha-response');
+        
+        if (!$recaptchaResponse) {
+            return new JsonResponse([
+                'success' => false,
+                'errors' => ['recaptcha' => 'Veuillez valider le reCAPTCHA']
+            ]);
+        }
+
+        // Vérifier le token avec l'API Google
+        $client = \Symfony\Component\HttpClient\HttpClient::create();
+        $response = $client->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+            'body' => [
+                'secret' => $this->getParameter('app.recaptcha_secret_key'),
+                'response' => $recaptchaResponse
+            ]
+        ]);
+
+        $recaptchaResult = json_decode($response->getContent(), true);
+
+        if (!$recaptchaResult['success']) {
+            return new JsonResponse([
+                'success' => false,
+                'errors' => ['recaptcha' => 'La vérification reCAPTCHA a échoué. Veuillez réessayer.']
+            ]);
+        }
+
         // Création de l'utilisateur avec les données du formulaire
         $user = new Utilisateur();
         $user->setNom($request->request->get('nom'));
@@ -112,6 +141,12 @@ class SignInController extends AbstractController
         $user->setRole($request->request->get('role'));
         $user->setPhoto('Sign_in/img/user.png');
         $user->setIsBlocked(false);
+
+        // Sauvegarder le descripteur facial si disponible
+        $faceImage = $request->request->get('faceImage');
+        if ($faceImage) {
+            $user->setFaceDescriptor($faceImage);
+        }
 
         // Validation avec les contraintes Assert
         $errors = $validator->validate($user);
@@ -178,6 +213,67 @@ class SignInController extends AbstractController
                 'errors' => ['general' => 'Une erreur est survenue lors de l\'inscription']
             ]);
         }
+    }
+
+    #[Route('/face-login', name: 'app_face_login', methods: ['POST'])]
+    public function faceLogin(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $faceDescriptor = $data['faceDescriptor'];
+
+        // Récupérer tous les utilisateurs avec un descripteur facial
+        $users = $entityManager->getRepository(Utilisateur::class)->findAll();
+        $bestMatch = null;
+        $bestDistance = 0.6; // Seuil de similarité (plus petit = plus strict)
+
+        foreach ($users as $user) {
+            if ($user->getFaceDescriptor()) {
+                $storedDescriptor = json_decode($user->getFaceDescriptor(), true);
+                
+                // Calculer la distance euclidienne entre les descripteurs
+                $distance = $this->calculateDistance($faceDescriptor, $storedDescriptor);
+                
+                if ($distance < $bestDistance) {
+                    $bestMatch = $user;
+                    $bestDistance = $distance;
+                }
+            }
+        }
+
+        if ($bestMatch) {
+            // Connecter l'utilisateur
+            $session = $this->requestStack->getSession();
+            $session->set('user', [
+                'id' => $bestMatch->getId(),
+                'email' => $bestMatch->getEmail(),
+                'nom' => $bestMatch->getNom(),
+                'prenom' => $bestMatch->getPrenom(),
+                'role' => $bestMatch->getRole(),
+                'photo' => $bestMatch->getPhoto()
+            ]);
+
+            return new JsonResponse([
+                'success' => true,
+                'redirect' => $bestMatch->getRole() === 'admin' ? 
+                    $this->generateUrl('app_dashboard_admin') : 
+                    $this->generateUrl('app_home')
+            ]);
+        }
+
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Face not recognized'
+        ]);
+    }
+
+    private function calculateDistance($descriptor1, $descriptor2): float
+    {
+        $sum = 0;
+        for ($i = 0; $i < count($descriptor1); $i++) {
+            $diff = $descriptor1[$i] - $descriptor2[$i];
+            $sum += $diff * $diff;
+        }
+        return sqrt($sum);
     }
 }
 

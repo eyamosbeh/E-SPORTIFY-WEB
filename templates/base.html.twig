@@ -4,7 +4,142 @@
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}{% endblock %}
+        {% block stylesheets %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            /* Le style suivant N'AFFECTE PAS la navbar incluse */
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(120deg, #2193b0 0%, #6dd5ed 100%);
+            color: #222;
+        }
+        /* Styles modernes pour le contenu, PAS la navbar */
+        .container, .main-content, .content {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+            padding: 2rem 2.5rem;
+            margin: 2rem auto;
+            max-width: 1000px;
+        }
+        .card {
+            background: #fff;
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 4px 18px rgba(33,147,176,0.07);
+            color: #222;
+        }
+        .card .card-body h3, .card .card-body p { color: #222; }
+        .card-header { background: transparent; border: none; }
+        .table-responsive { border-radius: 18px; overflow: hidden; box-shadow: 0 2px 12px rgba(33,147,176,0.08); }
+        .table {
+            background: #fff;
+            color: #222;
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+        .table thead {
+            background: #2193b0;
+            color: #fff;
+            font-weight: 600;
+        }
+        .table th, .table td { vertical-align: middle; }
+        .table tbody tr:hover { background: #f3f9fb; }
+        .status-badge {
+            display: inline-block;
+            padding: 0.35em 1.1em;
+            border-radius: 18px;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #fff;
+            background: #2193b0;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(33,147,176,0.07);
+        }
+        .status-badge.en-attente { background: #ffb347; color: #fff; }
+        .status-badge.résolue { background: #43cea2; color: #fff; }
+        .status-badge.archivée { background: #b0b0b0; color: #fff; }
+        .btn, .btn-outline-primary, .btn-outline-info, .btn-outline-warning, .btn-outline-danger, .btn-outline-success {
+            border-radius: 22px !important;
+            font-weight: 600;
+            padding: 0.4em 1.3em;
+            box-shadow: 0 2px 8px rgba(33,147,176,0.07);
+            border: none;
+            color: #fff !important;
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover, .btn-outline-primary:hover, .btn-outline-info:hover, .btn-outline-warning:hover, .btn-outline-danger:hover, .btn-outline-success:hover {
+            background: linear-gradient(90deg, #6dd5ed 0%, #2193b0 100%);
+            color: #fff !important;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.13);
+        }
+        .btn-group .btn { margin-right: 0.4em; }
+        .btn-group .btn:last-child { margin-right: 0; }
+        .search-container { margin-bottom: 20px; }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 22px;
+            border: 1px solid #bde5fa;
+            background: #f3f9fb;
+            color: #222;
+            font-size: 1em;
+            transition: border 0.2s;
+        }
+        .search-input:focus { border: 1.5px solid #2193b0; outline: none; background: #fff; }
+        .search-icon { left: 15px; color: #2193b0; }
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #2193b0;
+            background: #f3f9fb;
+            border-radius: 12px;
+        }
+
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+            padding: 2rem 2.5rem;
+            margin: 2rem auto;
+            max-width: 1000px;
+        }
+        /* Styles titres */
+        h1, h2, h3, h4, h5 {
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .btn, button, input[type="submit"] {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: 0.6em 2em;
+            font-weight: 600;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(33,147,176,0.07);
+            cursor: pointer;
+        }
+        .btn:hover, button:hover, input[type="submit"]:hover {
+            background: linear-gradient(90deg, #6dd5ed 0%, #2193b0 100%);
+            box-shadow: 0 4px 16px rgba(33,147,176,0.13);
+        }
+        table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(33,147,176,0.08);
+        }
+        th, td {
+            padding: 0.75em 1em;
+        }
+        /* Scrollbar moderne */
+        ::-webkit-scrollbar { width: 8px; background: #eee; }
+        ::-webkit-scrollbar-thumb { background: #2193b0; border-radius: 4px; }
+    </style>
+{% endblock %}
     </head>
     <body>
         {% block body %}{% endblock %}

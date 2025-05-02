@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="{{ asset('navbar/scss/main.scss') }}">
 
 <!--==================== HEADER ====================-->
-<header class="nav-header {% if is_profile is defined and is_profile %}profile-nav{% endif %}">
-    <nav class="nav-navigation container">
+<header class="nav-header {% if is_profile is defined and is_profile %}profile-nav{% endif %}" style="background:#ababab !important;">
+    <nav class="nav-navigation" style="background:none !important;box-shadow:none !important;border-radius:0 !important;">
         <a href="{{ path('app_home') }}" class="nav-navigation__logo">
             <img src="{{ asset('navbar/img/E-SPORTIFY.png') }}" alt="E-SPORTIFY">
         </a>
@@ -33,7 +33,7 @@
                 </li>
 
                 <li>
-                    <a href="#" class="nav-navigation__link">Contact</a>
+                    <a href="{{ path('app_reclamation_index') }}" class="nav-navigation__link">Contact</a>
                 </li>
             </ul>
 
