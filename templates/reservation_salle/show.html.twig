@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Réservation{% endblock %}
+
+{% block body %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Détails de la réservation</h1>
+            {{ include('reservation_salle/_delete_form.html.twig') }}
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <td>{{ reservation.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Salle</th>
+                        <td>{{ reservation.salle.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date de début</th>
+                        <td>{{ reservation.dateDebut|date('d/m/Y H:i') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date de fin</th>
+                        <td>{{ reservation.dateFin|date('d/m/Y H:i') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Statut</th>
+                        <td>
+                            <span class="badge {% if reservation.statut == 'Confirmée' %}bg-success{% elseif reservation.statut == 'En attente' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ reservation.statut }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('app_reservation_salle_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_reservation_salle_edit', {'id': reservation.id}) }}" class="btn btn-warning">Modifier</a>
+        </div>
+    </div>
+{% endblock %} 

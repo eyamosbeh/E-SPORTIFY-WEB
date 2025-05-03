@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gemini AI{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Gemini AI Chat</h1>
+        
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" class="mb-4">
+                            <div class="form-group">
+                                <label for="prompt">Enter your prompt:</label>
+                                <textarea class="form-control" id="prompt" name="prompt" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">Generate Response</button>
+                        </form>
+
+                        {% if error %}
+                            <div class="alert alert-danger">
+                                <pre class="mb-0" style="white-space: pre-wrap; background: none; border: none; padding: 0; margin: 0; color: inherit;">{{ error }}</pre>
+                            </div>
+                        {% endif %}
+
+                        {% if response %}
+                            <div class="response-container mt-4">
+                                <h4>Response:</h4>
+                                <div class="card">
+                                    <div class="card-body">
+                                        {{ response|nl2br }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

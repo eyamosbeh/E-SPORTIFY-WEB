@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <!-- Custom Pagination CSS -->
+        <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+        <style>
+            .sidebar {
+                width: 250px;
+                height: 100vh;
+                background: #343a40;
+                color: white;
+                transition: all 0.3s;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+            }
+            .sidebar.collapsed {
+                margin-left: -250px;
+            }
+            .sidebar .nav-link {
+                color: rgba(255,255,255,.8);
+                padding: 1rem;
+                transition: all 0.3s;
+                border-radius: 5px;
+                margin: 5px 10px;
+            }
+            .sidebar .nav-link:hover {
+                color: white;
+                background: rgba(255,255,255,.1);
+            }
+            .sidebar .nav-link.active {
+                color: white;
+                background: rgba(255,255,255,.1);
+            }
+            .sidebar .nav-link i {
+                margin-right: 10px;
+                width: 20px;
+                text-align: center;
+            }
+            .main-content {
+                margin-left: 250px;
+                transition: all 0.3s;
+                min-height: 100vh;
+                background: #f8f9fa;
+            }
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            .toggle-btn {
+                background: transparent;
+                color: #343a40;
+                border: none;
+                padding: 8px;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.3s;
+                width: 35px;
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 10px;
+            }
+            .toggle-btn:hover {
+                background: rgba(0,0,0,.05);
+                transform: scale(1.05);
+            }
+            .toggle-btn i {
+                transition: transform 0.3s;
+                font-size: 14px;
+            }
+            .sidebar.collapsed + .main-content .toggle-btn i {
+                transform: rotate(180deg);
+            }
+            .navbar {
+                background: #fff;
+                box-shadow: 0 2px 4px rgba(0,0,0,.1);
+                padding: 0.5rem 1rem;
+            }
+            .navbar-brand {
+                font-weight: 600;
+                color: #343a40;
+            }
+            .navbar-nav .nav-link {
+                color: #6c757d;
+                padding: 0.5rem 1rem;
+            }
+            .navbar-nav .nav-link:hover {
+                color: #343a40;
+            }
+            .navbar-nav .nav-link.active {
+                color: #0d6efd;
+            }
+            .user-dropdown .dropdown-toggle::after {
+                display: none;
+            }
+            .user-dropdown .dropdown-menu {
+                border: none;
+                box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            }
+            .language-switcher {
+                margin-left: 1rem;
+            }
+            .language-switcher .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+            @media (max-width: 768px) {
+                .sidebar {
+                    margin-left: -250px;
+                }
+                .sidebar.show {
+                    margin-left: 0;
+                }
+                .main-content {
+                    margin-left: 0;
+                }
+            }
+        </style>
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        <div class="sidebar" id="sidebar">
+            <div class="p-3">
+              
+                <hr>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' }}" href="{{ path('app_home') }}">
+                            <i class="fas fa-home"></i> Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.get('_route') == 'app_salle_index' ? 'active' }}" href="{{ path('app_salle_index') }}">
+                            <i class="fas fa-door-open"></i> Salles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.get('_route') == 'app_reservation_salle_index' ? 'active' }}" href="{{ path('app_reservation_salle_index') }}">
+                            <i class="fas fa-calendar-alt"></i> Réservations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.get('_route') == 'app_gemini_index' ? 'active' }}" href="{{ path('app_gemini_index') }}">
+                            <i class="fas fa-robot"></i> Gemini AI
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.get('_route') == 'app_prediction_index' ? 'active' }}" href="{{ path('app_prediction_index') }}">
+                            <i class="fas fa-chart-line"></i> Prediction
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <div class="d-flex align-items-center">
+                        <button class="toggle-btn" id="sidebarToggle">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <a class="navbar-brand" href="{{ path('app_home') }}">
+                            <i class="fas fa-building me-2"></i>E-Sportify
+                        </a>
+                    </div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' }}" href="{{ path('app_home') }}">
+                                    <i class="fas fa-home me-1"></i>Accueil
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ app.request.get('_route') == 'app_salle_index' ? 'active' }}" href="{{ path('app_salle_index') }}">
+                                    <i class="fas fa-door-open me-1"></i>Salles
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ app.request.get('_route') == 'app_reservation_salle_index' ? 'active' }}" href="{{ path('app_reservation_salle_index') }}">
+                                    <i class="fas fa-calendar-alt me-1"></i>Réservations
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ app.request.get('_route') == 'app_gemini_index' ? 'active' }}" href="{{ path('app_gemini_index') }}">
+                                    <i class="fas fa-robot me-1"></i>Gemini AI
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ app.request.get('_route') == 'app_prediction_index' ? 'active' }}" href="{{ path('app_prediction_index') }}">
+                                    <i class="fas fa-chart-line me-1"></i>Prediction
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown user-dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i>Mon Compte
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profil</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid py-4">
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                {% block body %}{% endblock %}
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const toggleBtn = document.getElementById('sidebarToggle');
+                let isCollapsed = false;
+
+                // Fonction pour sauvegarder l'état de la sidebar
+                function saveSidebarState(state) {
+                    localStorage.setItem('sidebarCollapsed', state);
+                }
+
+                // Fonction pour charger l'état de la sidebar
+                function loadSidebarState() {
+                    const savedState = localStorage.getItem('sidebarCollapsed');
+                    if (savedState === 'true') {
+                        toggleSidebar();
+                    }
+                }
+
+                // Fonction pour basculer la sidebar
+                function toggleSidebar() {
+                    isCollapsed = !isCollapsed;
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                    saveSidebarState(isCollapsed);
+                }
+
+                // Gestionnaire d'événement pour le bouton de bascule
+                toggleBtn.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.toggle('show');
+                    } else {
+                        toggleSidebar();
+                    }
+                });
+
+                // Charger l'état initial
+                loadSidebarState();
+
+                // Gestion du redimensionnement de la fenêtre
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('show');
+                    }
+                });
+            });
+        </script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

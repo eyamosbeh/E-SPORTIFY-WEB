@@ -1,0 +1,261 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Prediction{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .prediction-container {
+        padding: 20px;
+    }
+    .prediction-box {
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+    .good {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .bad {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .unknown {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+    .factors {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    .positive {
+        color: green;
+    }
+    .negative {
+        color: red;
+    }
+    .step {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    .step-success {
+        border-left: 5px solid green;
+    }
+    .step-running {
+        border-left: 5px solid blue;
+    }
+    .step-failed {
+        border-left: 5px solid red;
+    }
+    .step-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .step-details {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f1f1f1;
+        border-radius: 3px;
+        max-height: 200px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container prediction-container">
+    <h1 class="mb-4">Week Quality Predictor</h1>
+    <p>This application analyzes data from multiple sources to predict whether the upcoming week will be good or not.</p>
+    
+    {% if not api_status %}
+    <div class="alert alert-danger mb-4">
+        <h4 class="alert-heading">Prediction Service Not Running!</h4>
+        <p>The prediction service is not currently running. Please start the Flask application by running:</p>
+        <pre class="bg-dark text-light p-3">python prediction_app.py</pre>
+        <p>Once the service is running, refresh this page.</p>
+    </div>
+    {% endif %}
+    
+    <div id="controls" class="mb-4">
+        <button id="runPipelineBtn" class="btn btn-primary me-2" {% if not api_status %}disabled{% endif %}>Run Complete Analysis</button>
+        <button id="getPredictionBtn" class="btn btn-secondary" {% if not api_status %}disabled{% endif %}>Get Latest Prediction</button>
+    </div>
+    
+    <div id="loading" class="d-none text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Running analysis, please wait...</p>
+    </div>
+    
+    <div id="results" class="d-none">
+        <h2>Prediction Results</h2>
+        
+        <div id="prediction" class="prediction-box unknown">
+            <h3>Prediction: <span id="predictionText">Unknown</span></h3>
+            <p>Confidence: <span id="confidenceText">0%</span></p>
+        </div>
+        
+        <div class="factors">
+            <h3>Key Factors:</h3>
+            <ul id="factorsList"></ul>
+        </div>
+        
+        <div id="pipelineSteps">
+            <h3>Pipeline Steps:</h3>
+            <div id="stepsList"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM elements
+        const runPipelineBtn = document.getElementById('runPipelineBtn');
+        const getPredictionBtn = document.getElementById('getPredictionBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const predictionBox = document.getElementById('prediction');
+        const predictionText = document.getElementById('predictionText');
+        const confidenceText = document.getElementById('confidenceText');
+        const factorsList = document.getElementById('factorsList');
+        const stepsList = document.getElementById('stepsList');
+        
+        // Run the complete pipeline
+        runPipelineBtn.addEventListener('click', async () => {
+            // Show loading, hide results
+            loading.classList.remove('d-none');
+            results.classList.add('d-none');
+            runPipelineBtn.disabled = true;
+            getPredictionBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/prediction/run-pipeline');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+                displayResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while running the pipeline: ' + error.message);
+            } finally {
+                loading.classList.add('d-none');
+                runPipelineBtn.disabled = false;
+                getPredictionBtn.disabled = false;
+            }
+        });
+        
+        // Get the latest prediction
+        getPredictionBtn.addEventListener('click', async () => {
+            // Show loading, hide results
+            loading.classList.remove('d-none');
+            results.classList.add('d-none');
+            runPipelineBtn.disabled = true;
+            getPredictionBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/prediction/get-prediction');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+                displayPrediction(data);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while getting the prediction: ' + error.message);
+            } finally {
+                loading.classList.add('d-none');
+                runPipelineBtn.disabled = false;
+                getPredictionBtn.disabled = false;
+            }
+        });
+        
+        // Display the complete results
+        function displayResults(data) {
+            // Display the prediction
+            displayPrediction(data.prediction);
+            
+            // Display the pipeline steps
+            stepsList.innerHTML = '';
+            data.steps.forEach(step => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `step step-${step.status === 'Success' ? 'success' : (step.status === 'Running...' ? 'running' : 'failed')}`;
+                
+                const stepHeader = document.createElement('div');
+                stepHeader.className = 'step-header';
+                stepHeader.innerHTML = `
+                    <h4>${step.step}</h4>
+                    <span>${step.status} (${step.time || 'N/A'})</span>
+                `;
+                
+                const stepDetails = document.createElement('div');
+                stepDetails.className = 'step-details';
+                stepDetails.textContent = step.details || 'No details available';
+                
+                stepDiv.appendChild(stepHeader);
+                stepDiv.appendChild(stepDetails);
+                stepsList.appendChild(stepDiv);
+            });
+            
+            // Show results
+            results.classList.remove('d-none');
+        }
+        
+        // Display just the prediction
+        function displayPrediction(prediction) {
+            // Set prediction text and class
+            predictionText.textContent = prediction.prediction;
+            predictionBox.className = 'prediction-box';
+            if (prediction.prediction === 'GOOD WEEK') {
+                predictionBox.classList.add('good');
+            } else if (prediction.prediction === 'NOT A GOOD WEEK') {
+                predictionBox.classList.add('bad');
+            } else {
+                predictionBox.classList.add('unknown');
+            }
+            
+            // Set confidence
+            confidenceText.textContent = prediction.confidence;
+            
+            // Set factors
+            factorsList.innerHTML = '';
+            prediction.factors.forEach(factor => {
+                const li = document.createElement('li');
+                li.textContent = factor;
+                if (factor.startsWith('✓')) {
+                    li.className = 'positive';
+                } else if (factor.startsWith('✗')) {
+                    li.className = 'negative';
+                }
+                factorsList.appendChild(li);
+            });
+            
+            // Show results
+            results.classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}

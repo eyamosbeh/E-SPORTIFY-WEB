@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Salle{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Détails de la salle</h1>
+            {{ include('salle/_delete_form.html.twig') }}
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <td>{{ salle.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nom</th>
+                        <td>{{ salle.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Capacité</th>
+                        <td>{{ salle.capacite }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ salle.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ salle.description }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('app_salle_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_salle_edit', {'id': salle.id}) }}" class="btn btn-warning">Modifier</a>
+        </div>
+    </div>
+
+    <div class="mt-4 card">
+        <div class="card-header">
+            <h2>Localisation</h2>
+        </div>
+        <div class="card-body">
+            <div id="map" style="height: 400px;"></div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var map = L.map('map').setView([33.8869, 9.5375], 7);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    // salle1 marker
+                    L.marker([36.8065, 10.1815]).addTo(map)
+                        .bindPopup('<b>mside</b><br>salle 1');
+
+                    // salle2 marker
+                    L.marker([34.7398, 10.7600]).addTo(map)
+                        .bindPopup('<b>cactus</b><br>salle 2');
+
+                    // salle3 marker
+                    L.marker([35.8245, 10.6346]).addTo(map)
+                        .bindPopup('<b>connectplus</b><br>salle 3');
+
+                    // salle4 marker
+                    L.marker([37.2746, 9.8627]).addTo(map)
+                        .bindPopup('<b>sallecp</b><br>salle 4');
+                });
+            </script>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h2>Réservations de cette salle</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date de début</th>
+                        <th>Date de fin</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for reservation in salle.reservations %}
+                    <tr>
+                        <td>{{ reservation.dateDebut|date('d/m/Y H:i') }}</td>
+                        <td>{{ reservation.dateFin|date('d/m/Y H:i') }}</td>
+                        <td>{{ reservation.statut }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ path('app_reservation_salle_show', {'id': reservation.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                                <a href="{{ path('app_reservation_salle_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">Aucune réservation trouvée</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %} 

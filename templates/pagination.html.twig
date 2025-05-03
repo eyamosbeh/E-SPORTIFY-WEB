@@ -1,0 +1,26 @@
+{% if show_pagination is defined and show_pagination %}
+    {% if pagination is defined and pagination.getPageCount() > 1 %}
+        <div class="pagination-container">
+            <div class="pagination">
+                {% if pagination.getCurrentPageNumber() > 1 %}
+                    <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({'page': pagination.getCurrentPageNumber() - 1})) }}" class="pagination-item pagination-prev">
+                        <span>&laquo;</span>
+                    </a>
+                {% endif %}
+
+                {% for page in pagination.getPaginationData().pagesInRange %}
+                    <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({'page': page})) }}" 
+                       class="pagination-item {% if page == pagination.getCurrentPageNumber() %}active{% endif %}">
+                        {{ page }}
+                    </a>
+                {% endfor %}
+
+                {% if pagination.getCurrentPageNumber() < pagination.getPageCount() %}
+                    <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({'page': pagination.getCurrentPageNumber() + 1})) }}" class="pagination-item pagination-next">
+                        <span>&raquo;</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endif %} 

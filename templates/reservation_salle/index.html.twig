@@ -1,0 +1,265 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Réservations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .chart-container {
+            width: 100%;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .stats-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .charts-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        /* Pagination styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+        }
+        .pagination-item {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+        }
+        .pagination-item:hover {
+            background-color: #f5f5f5;
+        }
+        .pagination-item.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .pagination-prev, .pagination-next {
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="content-wrapper">
+            <div>
+                <h1>Liste des Réservations</h1>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Filtres et options</h5>
+                            <a href="{{ path('app_reservation_salle_export_pdf') }}" class="btn btn-secondary">
+                                <i class="fas fa-file-pdf"></i> Exporter en PDF
+                            </a>
+                        </div>
+                        <form method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <input type="text" name="search" class="form-control" placeholder="Rechercher une salle..." value="{{ app.request.query.get('search') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="Confirmée" {% if app.request.query.get('status') == 'Confirmée' %}selected{% endif %}>Confirmée</option>
+                                    <option value="En attente" {% if app.request.query.get('status') == 'En attente' %}selected{% endif %}>En attente</option>
+                                    <option value="Annulée" {% if app.request.query.get('status') == 'Annulée' %}selected{% endif %}>Annulée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="{{ path('app_reservation_salle_new') }}" class="btn btn-success w-100">Nouvelle réservation</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Salle</th>
+                                <th>Date de début</th>
+                                <th>Date de fin</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for reservation in pagination %}
+                            <tr>
+                                <td>{{ reservation.id }}</td>
+                                <td>{{ reservation.salle.nom }}</td>
+                                <td>{{ reservation.dateDebut|date('d/m/Y') }}</td>
+                                <td>{{ reservation.dateFin|date('d/m/Y') }}</td>
+                                <td>
+                                    <span class="badge {% if reservation.statut == 'Confirmée' %}bg-success{% elseif reservation.statut == 'En attente' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ reservation.statut }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('app_reservation_salle_show', {'id': reservation.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                                        <a href="{{ path('app_reservation_salle_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6">Aucune réservation trouvée</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination-container">
+                    {{ include('pagination.html.twig', {pagination: pagination, show_pagination: show_pagination}) }}
+                </div>
+
+                <div class="charts-section mt-4">
+                    <h4 class="stats-title">Statistiques des Réservations</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="monthlyReservationsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('{{ path('app_reservation_salle_stats_data') }}')
+                .then(response => response.json())
+                .then(data => {
+                    // Status Chart (Pie)
+                    const statusCtx = document.getElementById('statusChart').getContext('2d');
+                    new Chart(statusCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.status.labels,
+                            datasets: [{
+                                data: data.status.data,
+                                backgroundColor: [
+                                    'rgba(40, 167, 69, 0.8)',  // Green for Confirmée
+                                    'rgba(255, 193, 7, 0.8)',  // Yellow for En attente
+                                    'rgba(220, 53, 69, 0.8)'   // Red for Annulée
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Distribution des Statuts',
+                                    font: { size: 16 }
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+
+                    // Monthly Chart (Stacked Bar)
+                    const monthlyCtx = document.getElementById('monthlyReservationsChart').getContext('2d');
+                    new Chart(monthlyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.monthly.labels,
+                            datasets: [
+                                {
+                                    label: 'Confirmée',
+                                    data: data.monthly.confirmed,
+                                    backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                                    borderColor: 'rgba(40, 167, 69, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'En attente',
+                                    data: data.monthly.pending,
+                                    backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                                    borderColor: 'rgba(255, 193, 7, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Annulée',
+                                    data: data.monthly.canceled,
+                                    backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                                    borderColor: 'rgba(220, 53, 69, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Réservations par Mois et Statut',
+                                    font: { size: 16 }
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    stacked: true
+                                },
+                                y: {
+                                    stacked: true,
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading statistics:', error));
+        });
+    </script>
+{% endblock %}
