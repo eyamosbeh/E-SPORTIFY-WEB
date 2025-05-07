@@ -4,6 +4,7 @@ Bienvenue sur E-Sportify, une plateforme innovante dédiée à la gestion des é
 Ce projet est encadré par l’université Esprit School of Engineering.
 
 📌 Table des matières
+
 🚀 Fonctionnalités principales
 
 🔐 Gestion des rôles
@@ -22,34 +23,43 @@ Ce projet est encadré par l’université Esprit School of Engineering.
 ## Fonctionnalités principales
  
 ###🧑‍💼 Gestion des utilisateurs
+
 Inscription et connexion des joueurs, sponsors, et administrateurs.
 Réinitialisation du mot de passe.
 Historique des connexions (journal d’activité).
 
-###📣 Gestion des événements e-sport
+###📣 Gestion des événements e-sport  
+
 Création et planification d'événements.
 Réservations par les joueurs.
 Notifications avant événements.
 Évaluations et retours post-événements.
 
 ###📋 Gestion des réclamations
+
 Soumission et suivi des réclamations par les utilisateurs.
 Réponses manuelles ou automatisées par les administrateurs.
 
 ###🛒 Gestion des produits e-sport
+
 Ajout, suppression et modification des produits.
 Avis utilisateurs et recommandations basées sur l’historique d’achat.
 
 ###🏋️‍♂️ Gestion des salles physiques
+
 Réservation de créneaux pour entraînement physique.
 Réservation de matériel spécifique.
 Synchronisation avec les objets connectés (ex : smartwatch).
 Vérification des équipements disponibles.
 
 ###📰 Gestion des actualités
+
+
 Publication d’articles liés au monde e-sport.
 
 ###📊 Tableau de bord administratif
+
+
 Visualisation de statistiques sur les ventes, événements, utilisateurs, et plaintes.
 
 
